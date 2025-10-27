@@ -1,3 +1,4 @@
+import 'package:ate/db_connection/DBConnections.dart';
 import 'package:flutter/material.dart';
 
 import 'DataFile.dart';
@@ -36,8 +37,8 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _isLoading = false;
       });
-      blanddb LD = new blanddb();
-      LD.loginData(
+      DbConnections dbConnections =  DbConnections();
+      dbConnections.loginData(
           _emailController.text, _passwordController.text, context);
       // Add your login logic here
 
@@ -75,6 +76,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    // _emailController.text = 'veera1997@gmail.com';
+    // _passwordController.text = 'veera12345';
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:ate/utils/app_constants.dart';
+
 import 'main.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
@@ -21,22 +23,23 @@ class blanddb
 
   Future<String?> loginData(String username, String password, BuildContext context) async {
     try {
-      // Connect to the DB
+      // Ensure Flutter is initialized (just in case)
+      WidgetsFlutterBinding.ensureInitialized();
+
+      // Connect to DB
       final db = await Db.create(connectionstrion());
       await db.open();
       var collection = db.collection("UserForms");
 
-      // Query for user with matching credentials
+      // Query for user
       var result = await collection.find({
         'Email': username,
         'Password': password,
       }).toList();
 
-      await db.close(); // Close DB connection
+      await db.close(); // Close DB
 
-      // Check if user found
       if (result.isEmpty) {
-        print('No user found');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Invalid credentials'),
@@ -46,17 +49,26 @@ class blanddb
         return null;
       }
 
-      // Get user document and save locally
+      // Save user locally
       var userDoc = result.first;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userData', jsonEncode(userDoc));
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userData', jsonEncode(userDoc));
+      } catch (spError) {
+        print("SharedPreferences error: $spError");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Local storage error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return null;
+      }
 
       String userType = userDoc['UsrType'] ?? "";
 
-      print('User found: $userType');
-
       if (userType.isNotEmpty) {
-        // Show success dialog
         final dialog = AwesomeDialog(
           context: context,
           animType: AnimType.leftSlide,
@@ -74,7 +86,6 @@ class blanddb
 
         dialog.show();
 
-        // Navigate after short delay
         Future.delayed(Duration(seconds: 2), () {
           dialog.dismiss();
           Navigator.pushReplacement(
@@ -93,7 +104,6 @@ class blanddb
         );
         return null;
       }
-
     } catch (e) {
       print('Login error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -331,31 +341,32 @@ class blanddb
 
 class UserTransactions{
   ObjectId? id;
-  String Username;
-  String TransactionAmount;
-  String Transactionid;
+  String username;
+  String transactionAmount;
+  String transactionId;
+  String createdAt;
 
-  String Transactionmode;
-  String TransactionStatus;
+  String transactionMode;
+  String transactionStatus;
   UserTransactions({
     this.id,
-    required this.Username,
-    required this.TransactionAmount,
-    required this.Transactionid,
-
-    required this.Transactionmode,
-    required this.TransactionStatus,
-
+    required this.username,
+    required this.transactionAmount,
+    required this.transactionId,
+required this. createdAt,
+    required this.transactionMode,
+    required this.transactionStatus,
   });
   factory UserTransactions.fromMap(Map<String, dynamic> map) {
 
     return UserTransactions(
       id: map['_id'],
-      Username: map['Username'],
-      TransactionAmount: map['TransactionAmount'],
-      Transactionid: map['Transactionid'],
-
-      Transactionmode: map['Transactionmode'], TransactionStatus:map['TransactionStatus']
+      username: map['username'],
+        transactionAmount: map['transactionAmount'],
+      transactionId: map['transactionId'],
+        createdAt: map['createdAt'],
+      transactionMode: map['transactionMode'],
+        transactionStatus:map['transactionAmount']
 
     );
   }
@@ -376,14 +387,14 @@ class UserTransactions{
         "${now.minute.toString().padLeft(2, '0')}:"
         "${now.second.toString().padLeft(2, '0')}";
     return {
-      'username': Username,
-      'transactionAmount': TransactionAmount,
-      'transactionId': Transactionid,
+      'username': username,
+      'transactionAmount': transactionAmount,
+      'transactionId': transactionId,
       'transactionDate': formattedDate,
       'transactionTime': timeOnly,
-      'transactionMode': Transactionmode,
-      'transactionStatus': TransactionStatus,
-      'createdAt': DateTime.now().toIso8601String(),
+      'transactionMode': transactionMode,
+      'transactionStatus': transactionStatus,
+      'createdAt': createdAt,
     };
   }
 }
@@ -453,7 +464,7 @@ class Razorpaybl {
   late BuildContext context;
   int GlobalAmount = 0;
 
-  void openCheckout(String amount, int Contact, String emailid,
+  void openCheckout(String amount, int mobileNumber, String emailid,
       String Name) async {
     GlobalAmount = int.parse(amount);
     Razorpay razorpay = Razorpay();
@@ -464,7 +475,7 @@ class Razorpaybl {
       'description': 'Donation Amount',
       'retry': {'enabled': true, 'max_count': 1},
       'send_sms_hash': true,
-      'prefill': {'contact': Contact, 'email': emailid},
+      'prefill': {'contact': mobileNumber, 'email': emailid},
       'external': {
         'wallets': ['paytm']
       }
@@ -478,19 +489,19 @@ class Razorpaybl {
 
   void handlePaymentErrorResponse(PaymentFailureResponse response) async {
     final prefs = await SharedPreferences.getInstance();
-    final dataString = prefs.getString('userData');
+    final dataString = prefs.getString(AppConstants.userData);
     if (dataString != null) {
       final data = jsonDecode(dataString);
       UserTransactions ufs = UserTransactions(
-        Username: data['Email'] ?? '',
+        username: data['Email'].toString(),
         // Handle potential null value
-        TransactionAmount: GlobalAmount.toString(),
+        transactionAmount: GlobalAmount.toString(),
         // Get amount from response if available
-        Transactionid: response.code?.toString() ?? '',
-
+        transactionId: response.code?.toString() ?? '',
+        createdAt: DateTime.now().toIso8601String(),
         // Use proper timestamp
-        Transactionmode: response.message?.toString() ?? '',
-        TransactionStatus: "Failed",
+        transactionMode: response.message?.toString() ?? '',
+        transactionStatus: "Failed",
       );
       bool isback = await saveTransactionToDatabase(
           ufs, response as PaymentSuccessResponse);
@@ -521,18 +532,17 @@ class Razorpaybl {
 
   void handlePaymentSuccessResponse(PaymentSuccessResponse response) async {
     final prefs = await SharedPreferences.getInstance();
-    final dataString = prefs.getString('userData');
+    final dataString = prefs.getString(AppConstants.userData);
     if (dataString != null) {
       final data = jsonDecode(dataString);
       UserTransactions ufs = UserTransactions(
-        Username: data['Email'] ?? '',
+        username: data['Email'].toString(),
+        transactionAmount: GlobalAmount.toString(),
 
-        TransactionAmount: GlobalAmount.toString(),
-
-        Transactionid: response.paymentId?.toString() ?? '',
-
-        Transactionmode: response.signature.toString(),
-        TransactionStatus: "success",
+        transactionId: response.paymentId?.toString() ?? '',
+          createdAt: DateTime.now().toIso8601String(),
+        transactionMode: response.signature.toString(),
+        transactionStatus: "success",
 
       );
       bool result = await saveTransactionToDatabase(ufs, response);

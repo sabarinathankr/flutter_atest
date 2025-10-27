@@ -1,4 +1,4 @@
-package com.example.ate
+package com.atest.ate
 
 import io.flutter.embedding.android.FlutterActivity
 
