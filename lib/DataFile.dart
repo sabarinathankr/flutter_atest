@@ -126,7 +126,7 @@ class blanddb
 
     if (result.isSuccess) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userData', jsonEncode(ufs.toMap()));
+      await prefs.setString(AppConstants.userData, jsonEncode(ufs.toMap()));
       print(prefs);
       // Show success dialog
       final dialog = AwesomeDialog(

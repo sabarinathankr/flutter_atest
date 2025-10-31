@@ -195,10 +195,10 @@ class _UserDashboardTabState extends State<UserDashboardTab> {
           onTap: _pickImage,
           child: CircleAvatar(
             radius: isTablet ? 80 : 60,
-            backgroundImage: Profilepic != null
+            backgroundImage: (Profilepic != null && Profilepic!.isNotEmpty)
                 ? MemoryImage(Profilepic!)
                 : null,
-            child: Profilepic == null
+            child: (Profilepic == null || Profilepic!.isEmpty)
                 ? Icon(Icons.camera_alt, size: isTablet ? 50 : 40)
                 : null,
           ),

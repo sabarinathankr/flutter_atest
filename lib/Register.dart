@@ -7,9 +7,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'DataFile.dart';
-void main() {
-  //runApp(MyApp1(islogin));
-}
+
 
 class MyApp1 extends StatelessWidget {
   final String islogin;
@@ -105,6 +103,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      // Check if any mandatory fields are empty
+      if (_nameController.text.isEmpty ||
+          _emailController.text.isEmpty ||
+          _passwordController.text.isEmpty ||
+          _mobileController.text.isEmpty ||
+          _selectedGender == null ||
+          _dobController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('⚠️ Please fill all mandatory fields.')),
+        );
+        return;
+      }
+
       try {
         var user = UserForms(
           FullName: _nameController.text,
@@ -113,18 +124,25 @@ class _MyHomePageState extends State<MyHomePage> {
           MobileNumber: _mobileController.text,
           Gender: _selectedGender.toString(),
           Dateofbirth: _dobController.text,
-          Profile: base64Image,
-          UsrType: 'User'
+          Profile: base64Image ?? '', // ✅ Pass empty string if null
+          UsrType: 'User',
         );
-        blanddb ins = new blanddb();
+
+        blanddb ins = blanddb();
         ins.InsertData(user, context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('⚠️ Error: $e')),
         );
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('⚠️ Please correct the highlighted errors.')),
+      );
     }
   }
+
+
 
   Widget _buildTextField({
     required String label,
