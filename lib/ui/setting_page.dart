@@ -1,14 +1,14 @@
-
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'dart:typed_data';
 
-
 import '../Login.dart';
 import '../Register.dart';
 import '../models/sales_data.dart';
 import '../utils/shared_preference.dart';
+import '../utils/app_constants.dart'; // 👈 Make sure AppConstants.userData is defined here
 import 'landingpage.dart'; // for SfCartesianChart
 
 class UserDashboardTab extends StatefulWidget {
@@ -27,23 +27,68 @@ class UserDashboardTab extends StatefulWidget {
   State<UserDashboardTab> createState() => _UserDashboardTabState();
 }
 
-class _UserDashboardTabState extends State<UserDashboardTab> {
+class _UserDashboardTabState extends State<UserDashboardTab>
+    with WidgetsBindingObserver {
   bool _isLoginVisible = true;
   bool _isLogoutVisible = false;
   String Username = "User";
   Uint8List? Profilepic;
-
-  List<String> menuItems = ['Option 1', 'Option 2', 'Option 3'];
-  List<bool> toggleStates = [false, true, false];
-  List<SalesData> data = [
-    SalesData('Mon', 35),
-    SalesData('Tue', 28),
-    SalesData('Wed', 34),
-    SalesData('Thu', 32),
-    SalesData('Fri', 40),
-  ];
-
   int userTtlContrib = 23;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkLoginStatus(); // 👈 Check login state at start
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Detect app resume/pause
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      debugPrint("App Resumed");
+      _onResumeAction();
+    } else if (state == AppLifecycleState.paused) {
+      debugPrint("App Paused");
+    } else if (state == AppLifecycleState.inactive) {
+      debugPrint("App Inactive");
+    } else if (state == AppLifecycleState.detached) {
+      debugPrint("App Detached");
+    }
+  }
+
+  void _onResumeAction() {
+    // Check login state again when app resumes
+    _checkLoginStatus();
+  }
+
+  // 👇 Check login status and update buttons
+  Future<void> _checkLoginStatus() async {
+    final dataString =
+    await SharedPreferenceHelper.getString(AppConstants.userData);
+    if (dataString != null && dataString.isNotEmpty) {
+      final data = jsonDecode(dataString);
+      setState(() {
+        _isLoginVisible = false;
+        _isLogoutVisible = true;
+        Username = data['FullName'];
+        Profilepic = base64Decode(data['Profile']);
+      });
+    } else {
+      setState(() {
+        _isLoginVisible = true;
+        _isLogoutVisible = false;
+        Username = "User";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,9 +107,6 @@ class _UserDashboardTabState extends State<UserDashboardTab> {
           _buildProfileSection(isTablet),
           const SizedBox(height: 24),
           _buildStatsGrid(isTablet, isLargeScreen),
-          const SizedBox(height: 24),
-          _buildQuickActions(isTablet, isLargeScreen),
-          const SizedBox(height: 32),
         ],
       ),
     );
@@ -111,25 +153,44 @@ class _UserDashboardTabState extends State<UserDashboardTab> {
   Widget _buildAuthSection(bool isTablet) {
     return Center(
       child: Container(
-        constraints:
-        BoxConstraints(maxWidth: isTablet ? 600 : double.infinity),
+        constraints: BoxConstraints(maxWidth: isTablet ? 600 : double.infinity),
         child: Row(
           children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MyApp1("isregister")),
-                  );
-                },
-                icon: const Icon(Icons.app_registration),
-                label: const Text('Register'),
-                style: _buttonStyle(isTablet),
+            // REGISTER
+            if (_isLoginVisible)
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => RegisterPage()),
+                    );
+                  },
+                  icon: const Icon(Icons.app_registration),
+                  label: const Text('Register'),
+                  style: _buttonStyle(isTablet),
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
+            if (_isLoginVisible) const SizedBox(width: 16),
+
+            // LOGIN
+            if (_isLoginVisible)
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  },
+                  icon: const Icon(Icons.login_outlined),
+                  label: const Text('Login'),
+                  style: _buttonStyle(isTablet),
+                ),
+              ),
+
+            // LOGOUT
             if (_isLogoutVisible)
               Expanded(
                 child: ElevatedButton.icon(
@@ -153,9 +214,8 @@ class _UserDashboardTabState extends State<UserDashboardTab> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.lime,
                     foregroundColor: Colors.black,
-                    padding: EdgeInsets.symmetric(
-                      vertical: isTablet ? 20 : 16,
-                    ),
+                    padding:
+                    EdgeInsets.symmetric(vertical: isTablet ? 20 : 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -164,21 +224,6 @@ class _UserDashboardTabState extends State<UserDashboardTab> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-              ),
-            const SizedBox(width: 16),
-            if (_isLoginVisible)
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
-                  },
-                  icon: const Icon(Icons.login_outlined),
-                  label: const Text('Login'),
-                  style: _buttonStyle(isTablet),
                 ),
               ),
           ],
@@ -244,43 +289,7 @@ class _UserDashboardTabState extends State<UserDashboardTab> {
     );
   }
 
-  // QUICK ACTIONS GRID
-  Widget _buildQuickActions(bool isTablet, bool isLargeScreen) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Quick Actions',
-          style: TextStyle(
-            fontSize: isTablet ? 24 : 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: isLargeScreen ? 3 : (isTablet ? 2 : 2),
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: isTablet ? 1.3 : 1.1,
-          children: [
-            _buildActionCard('Analytics', Icons.analytics, Colors.teal, () {
-              _showAnalyticsBottomSheet(isTablet);
-            }, isTablet),
-            _buildActionCard('Settings', Icons.settings, Colors.teal, () {
-              _showSettingsBottomSheet(isTablet);
-            }, isTablet),
-            _buildActionCard('Support', Icons.contact_support, Colors.green, () {
-              _showSupportBottomSheet(isTablet);
-            }, isTablet),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // HELPERS
+  // BUTTON STYLE HELPER
   ButtonStyle _buttonStyle(bool isTablet) {
     return ElevatedButton.styleFrom(
       padding: EdgeInsets.symmetric(vertical: isTablet ? 20 : 16),
@@ -353,177 +362,7 @@ class _UserDashboardTabState extends State<UserDashboardTab> {
     );
   }
 
-  Widget _buildActionCard(String title, IconData icon, Color color,
-      VoidCallback onPressed, bool isTablet) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: EdgeInsets.all(isTablet ? 20.0 : 16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: isTablet ? 32 : 24),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: isTablet ? 16 : 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _pickImage() {
     // Implement your image picker
   }
-
-  void _showAnalyticsBottomSheet(bool isTablet) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _BottomSheetContainer(
-        title: 'Analytics',
-        child: SfCartesianChart(
-          primaryXAxis: CategoryAxis(),
-          primaryYAxis: NumericAxis(),
-          series: <CartesianSeries<SalesData, String>>[
-            ColumnSeries<SalesData, String>(
-              dataSource: data,
-              xValueMapper: (SalesData sales, _) => sales.year,
-              yValueMapper: (SalesData sales, _) => sales.sales,
-              color: Colors.blue,
-              borderRadius: BorderRadius.circular(4),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showSettingsBottomSheet(bool isTablet) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _BottomSheetContainer(
-        title: 'Admin Settings',
-        child: Card(
-          child: Column(
-            children: List.generate(
-              menuItems.length,
-                  (index) => ListTile(
-                title: Text(
-                  menuItems[index],
-                  style: TextStyle(fontSize: isTablet ? 18 : 16),
-                ),
-                trailing: Switch(
-                  value: toggleStates[index],
-                  onChanged: (bool newValue) {
-                    setState(() {
-                      toggleStates[index] = newValue;
-                    });
-                  },
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showSupportBottomSheet(bool isTablet) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _BottomSheetContainer(
-        title: 'Send Notification',
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          children: const [
-            ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Account Settings'),
-              trailing: Icon(Icons.arrow_forward_ios),
-            ),
-            ListTile(
-              leading: Icon(Icons.notifications),
-              title: Text('Notifications'),
-              trailing: Icon(Icons.arrow_forward_ios),
-            ),
-            ListTile(
-              leading: Icon(Icons.security),
-              title: Text('Security'),
-              trailing: Icon(Icons.arrow_forward_ios),
-            ),
-            ListTile(
-              leading: Icon(Icons.help),
-              title: Text('Help & Support'),
-              trailing: Icon(Icons.arrow_forward_ios),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
-
-// Simple reusable bottom sheet container widget
-class _BottomSheetContainer extends StatelessWidget {
-  final String title;
-  final Widget child;
-
-  const _BottomSheetContainer({required this.title, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius:
-        BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(title,
-                style:
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          ),
-          Expanded(child: child),
-        ],
-      ),
-    );
-  }
-}
-

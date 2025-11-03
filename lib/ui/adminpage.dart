@@ -10,18 +10,12 @@ import '../models/sales_data.dart';
 
 
 class AdminDashboard extends StatefulWidget {
-  final List<dynamic> dynamicList;
-  final List<String> stringLists;
   final List<SalesData> data;
-  final Set<int> expandedTiles;
   final Function setStateCallback;
 
   const AdminDashboard({
     super.key,
-    required this.dynamicList,
-    required this.stringLists,
     required this.data,
-    required this.expandedTiles,
     required this.setStateCallback,
   });
 
@@ -30,6 +24,7 @@ class AdminDashboard extends StatefulWidget {
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
+  List<dynamic> dynamicList = [];
   final TextEditingController _nameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   File? _selectedFile;
@@ -124,7 +119,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             children: [
               StatCard(
                   title: 'Total Users',
-                  value: widget.dynamicList.length.toString(),
+                  value: dynamicList.length.toString(),
                   icon: Icons.people,
                   color: Colors.blue,
                   change: '+12%',

@@ -1,32 +1,19 @@
 import 'dart:convert';
 
-import 'package:ate/main.dart';
 import 'package:flutter/material.dart';
-import 'package:mongo_dart/mongo_dart.dart' hide State;
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'DataFile.dart';
 
 
-class MyApp1 extends StatelessWidget {
-  final String islogin;
-  const MyApp1(this.islogin, {Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(home: MyHomePage(islogin));
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage(String islogin);
+class RegisterPage extends StatefulWidget {
+  RegisterPage();
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-  //_DatePickerDemoState createState() => _DatePickerDemoState();
+  State<RegisterPage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<RegisterPage> {
 
   final _formKey = GlobalKey<FormState>();
 
@@ -44,41 +31,11 @@ class _MyHomePageState extends State<MyHomePage> {
   var base64Image;
   final ImagePicker _picker = ImagePicker();
   String? _selectedGender;
-  final List<String> videoIds = [
-    'nM7D8B6aBUY',
-    'HPbwEvMwpnk',
-    'Rtvax982IDo',
-    'jEWU0jLyGnw',
-    'BGM3kJoNVIk',
-  ];
 
-  final List<YoutubePlayerController> _controllers = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _initControllers();
-  }
-
-  void _initControllers() {
-    for (String id in videoIds) {
-      _controllers.add(
-        YoutubePlayerController(
-          initialVideoId: id,
-          flags: YoutubePlayerFlags(
-            autoPlay: false,
-            mute: false,
-          ),
-        ),
-      );
-    }
-  }
 
   @override
   void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
+
     _nameController.dispose();
     _emailController.dispose();
 
@@ -111,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _selectedGender == null ||
           _dobController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('⚠️ Please fill all mandatory fields.')),
+          const SnackBar(content: Text('⚠️ Please fill all fields.')),
         );
         return;
       }

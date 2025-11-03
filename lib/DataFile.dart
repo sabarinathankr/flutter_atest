@@ -148,9 +148,10 @@ class blanddb
 
       Future.delayed(Duration(seconds: 2), () {
         dialog.dismiss(); // Close the dialog
-        Navigator.push(
+        Navigator.pop(context);
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => MyApp()),
+          MaterialPageRoute(builder: (context) => MyApp()), (Route<dynamic> route) => false,
         );
       });
 
