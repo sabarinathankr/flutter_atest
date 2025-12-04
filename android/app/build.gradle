@@ -6,7 +6,11 @@ plugins {
 }
 
 android {
-
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
     namespace = "com.atest"
     compileSdk = 35
     ndkVersion = flutter.ndkVersion
@@ -25,22 +29,32 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 24
-        targetSdk = 35
-        versionCode = 3
+        targetSdk = 36
+        versionCode = 6
         versionName = flutter.versionName
+
+        // This block is different from the one you use to link Gradle
+        // to your CMake or ndk-build script.
+        externalNativeBuild {
+            // For ndk-build, instead use the ndkBuild block.
+            cmake {
+                // Passes optional arguments to CMake.
+                arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+            }
+        }
     }
     signingConfigs {
 
         debug {
             keyAlias 'veera'
             keyPassword '123456'
-            storeFile file('C:/Users/DIS949/StudioProjects/SampleProject/FlutterAtest/my-release-key.keystore') // Make sure this path is correct
+            storeFile file('C:/Users/SabariGiriNathanKR/StudioProjects/flutter_atest/my-release-key.keystore') // Make sure this path is correct
             storePassword '123456'
         }
         release {
             keyAlias 'veera'
             keyPassword '123456'
-            storeFile file('C:/Users/DIS949/StudioProjects/SampleProject/FlutterAtest/my-release-key.keystore') // Make sure this path is correct
+            storeFile file('C:/Users/SabariGiriNathanKR/StudioProjects/flutter_atest/my-release-key.keystore') // Make sure this path is correct
             storePassword '123456'
             v1SigningEnabled true
             v2SigningEnabled true
