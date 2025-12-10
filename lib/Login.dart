@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:ate/db_connection/DBConnections.dart';
+import 'package:ate/utils/app_constants.dart';
+import 'package:ate/utils/shared_preference.dart';
 import 'package:flutter/material.dart';
 
 import 'DataFile.dart';
@@ -27,29 +31,164 @@ class _LoginPageState extends State<LoginPage> {
 
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
+
+      setState(() => _isLoading = true);
+
+      DbConnections dbConnections = DbConnections();
+
+      String result = await dbConnections.loginData(
+        _emailController.text,
+        _passwordController.text,
+        context,
+      );
+
+      setState(() => _isLoading = false);
+
+      if (result == "success") {
+        // SUCCESS DIALOG
+        final dialog = AwesomeDialog(
+          context: context,
+          animType: AnimType.leftSlide,
+          dialogType: DialogType.noHeader,
+          showCloseIcon: false,
+          dismissOnTouchOutside: false,
+          customHeader: Icon(Icons.check_circle, color: Colors.green, size: 80),
+          title: 'Success',
+          desc: 'User login successful!',
+        );
+
+        dialog.show();
+
+        Future.delayed(const Duration(seconds: 2), () {
+          dialog.dismiss();
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => MyApp()),
+                (_) => false,
+          );
+        });
+
+      } else if (result == "failure") {
+        // WRONG CREDENTIALS
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid credentials'),
+            backgroundColor: Colors.red,
+          ),
+        );
+
+      } else if (result == "error") {
+        // INTERNAL ERROR
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Something went wrong. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+
+
+  /* void _handleLogin() async {
+    if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
 
       // Simulate login process
-      await Future.delayed(const Duration(seconds: 2));
+      // await Future.delayed(const Duration(seconds: 2));
 
       setState(() {
         _isLoading = false;
       });
       DbConnections dbConnections =  DbConnections();
-      dbConnections.loginData(
-          _emailController.text, _passwordController.text, context);
-      // Add your login logic here
+     *//* dbConnections.loginData(
+          _emailController.text, _passwordController.text, context);*//*
+      String? result = await dbConnections.loginData(_emailController.text, _passwordController.text, context);
+
+     *//* if (result != null) {
+        // SUCCESS CALLBACK
+        print("Login success, userType = $result");
+      } else {
+        // FAILURE CALLBACK
+        print("Login failed");
+      }*//*
+
+      if (result== null || result.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid credentials'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return null;
+      }
+
+      // Save user locally
+      var userDoc = result.first;
+      print("SharedPreferences_userDoc: $userDoc");
+      try {
+        await SharedPreferenceHelper.setString(AppConstants.userData, jsonEncode(userDoc));
 
 
+      } catch (spError) {
+        print("SharedPreferences error: $spError");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Local storage error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return null;
+      }
+
+      String userType = userDoc['UsrType'] ?? "";
+
+      if (userType.isNotEmpty) {
+        final dialog = AwesomeDialog(
+          context: context,
+          animType: AnimType.leftSlide,
+          dialogType: DialogType.noHeader,
+          showCloseIcon: false,
+          dismissOnTouchOutside: false,
+          customHeader: Icon(
+            Icons.check_circle,
+            color: Colors.green,
+            size: 80,
+          ),
+          title: 'Success',
+          desc: 'User login successful!',
+        );
+
+        dialog.show();
+
+        Future.delayed(Duration(seconds: 2), () {
+          dialog.dismiss();
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => MyApp()), (Route<dynamic> route) => false,
+          );
+        });
+
+        // return userType;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('User type not defined.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return null;
+      }
       print('Email: ${_emailController.text}');
       print('Password: ${_passwordController.text}');
 
       // Show success message
 
     }
-  }
+  }*/
 
   void _openTermsAndConditions() {
     // Handle terms and conditions link
@@ -76,8 +215,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // _emailController.text = 'veera1997@gmail.com';
-    // _passwordController.text = 'veera12345';
+    _emailController.text = 'veera1997@gmail.com';
+    _passwordController.text = 'veera12345';
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(

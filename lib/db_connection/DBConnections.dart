@@ -30,14 +30,13 @@ class DbConnections
     return Connection;
   }
 
-  Future<String?> loginData(String username, String password, BuildContext context) async {
+  Future<String> loginData(String username, String password, BuildContext context) async {
     try {
-      // Ensure Flutter is initialized (just in case)
       WidgetsFlutterBinding.ensureInitialized();
 
-      // Connect to DB
       final db = await Db.create(connectionstrion());
       await db.open();
+
       var collection = db.collection("UserForms");
 
       // Query for user
@@ -46,85 +45,27 @@ class DbConnections
         'Password': password,
       }).toList();
 
-      await db.close(); // Close DB
+      await db.close();
 
       if (result.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid credentials'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return null;
+        return "failure";  // ❗ invalid credentials
       }
 
       // Save user locally
       var userDoc = result.first;
-      print("SharedPreferences_userDoc: $userDoc");
       try {
-        // final prefs = await SharedPreferences.getInstance();
-        // await prefs.setString('userData', jsonEncode(userDoc))
-        await SharedPreferenceHelper.setString(AppConstants.userData, jsonEncode(userDoc));
-
-
+        await SharedPreferenceHelper.setString(
+          AppConstants.userData,
+          jsonEncode(userDoc),
+        );
       } catch (spError) {
-        print("SharedPreferences error: $spError");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Local storage error'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return null;
+        return "error"; // ❗ local storage issue
       }
 
-      String userType = userDoc['UsrType'] ?? "";
+      return "success";  // ❗ login successful
 
-      if (userType.isNotEmpty) {
-        final dialog = AwesomeDialog(
-          context: context,
-          animType: AnimType.leftSlide,
-          dialogType: DialogType.noHeader,
-          showCloseIcon: false,
-          dismissOnTouchOutside: false,
-          customHeader: Icon(
-            Icons.check_circle,
-            color: Colors.green,
-            size: 80,
-          ),
-          title: 'Success',
-          desc: 'User login successful!',
-        );
-
-        dialog.show();
-
-        Future.delayed(Duration(seconds: 2), () {
-          dialog.dismiss();
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => MyApp()), (Route<dynamic> route) => false,
-          );
-        });
-
-        return userType;
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User type not defined.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return null;
-      }
     } catch (e) {
-      print('Login error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('An error occurred: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return null;
+      return "error"; // ❗ DB or other error
     }
   }
 

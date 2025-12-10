@@ -29,7 +29,7 @@ class PaymentsTab extends StatefulWidget {
 }
 
 class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver{
-
+  bool isLoading = true;
   int selectedYear = DateTime.now().year;
   int selectedMonth = DateTime.now().month;
 
@@ -60,11 +60,25 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
     }
   }
 
-  Future<void> getTransactionHistory() async {
+ /* Future<void> getTransactionHistory() async {
     DbConnections dbConnections = DbConnections();
     transactionList = await dbConnections.getAllTransactions(selectedYear, selectedMonth);
     setState(() {
       transactionList = transactionList;
+    });
+  }
+*/
+
+  Future<void> getTransactionHistory() async {
+    setState(() => isLoading = true);
+
+    DbConnections dbConnections = DbConnections();
+    List<UserTransactions> list =
+    await dbConnections.getAllTransactions(selectedYear, selectedMonth);
+
+    setState(() {
+      transactionList = list;
+      isLoading = false;
     });
   }
 
@@ -310,73 +324,55 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
       ),
 
       // 🔹 BODY WITH PAY NOW AT BOTTOM
-      body: Column(
-        children: [
-          Expanded(
-            child: transactionList.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-              itemCount: transactionList.length,
-              itemBuilder: (context, index) {
-                final txn = transactionList[index];
-                final isExpanded = expandedTiles.contains(index);
-                final statusText = txn.transactionStatus == "1" ? "Success" : "Failed";
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  child: ExpansionTile(
-                    title: Text(
-                      "${txn.username}\nAmount: ₹${txn.transactionAmount}",
-                      style:
-                      const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  /*  subtitle: Text(
-                        "Status: ${txn.transactionStatus} | ${txn.createdAt ?? ''}"),*/
-                    subtitle: Text("Status: $statusText \nTime: ${txn.createdAt ?? ''}"),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.picture_as_pdf,
-                          color: Colors.redAccent),
-                      onPressed: () => downloadTransactionPDF(txn),
-                    ),
-                    children: [
-                      _buildDetailRow("Transaction ID", txn.transactionId),
-                      _buildDetailRow(
-                          "Created Time", txn.createdAt ?? "-"),
-                      _buildDetailRow(
-                          "Amount", "₹${txn.transactionAmount}"),
-                      _buildDetailRow("Status", txn.transactionStatus),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              Razorpaybl().openCheckout(
-                                  txn.transactionAmount.toString(),
-                                  8300286065,
-                                  "abdhulghaani@gmail.com",
-                                  txn.username);
-                            },
-                            child: const Text("Pay Again"),
-                          ),
-                          ElevatedButton(
-                            onPressed: () => downloadTransactionPDF(txn),
-                            child: const Text("Download PDF"),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
+        body: Column(
+          children: [
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())     // 🔵 LOADING
+                  : transactionList.isEmpty
+                  ? const Center(                                      // 🔴 NO DATA
+                child: Text(
+                  "No transactions found",
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+              )
+                  : ListView.builder(                                  // 🟢 SHOW LIST
+                itemCount: transactionList.length,
+                itemBuilder: (context, index) {
+                  final txn = transactionList[index];
+                  final statusText =
+                  txn.transactionStatus == "1" ? "Success" : "Failed";
 
-          // 🔹 PAY NOW SECTION FIXED
-          SafeArea(child: _buildPayNowSection(isTablet)),
-        ],
-      ),
+                  return Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    child: ExpansionTile(
+                      title: Text(
+                        "${txn.username}\nAmount: ₹${txn.transactionAmount}",
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text("Status: $statusText\nTime: ${txn.createdAt ?? ''}"),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
+                        onPressed: () => downloadTransactionPDF(txn),
+                      ),
+                      children: [
+                        _buildDetailRow("Transaction ID", txn.transactionId),
+                        _buildDetailRow("Created Time", txn.createdAt ?? "-"),
+                        _buildDetailRow("Amount", "₹${txn.transactionAmount}"),
+                        _buildDetailRow("Status", txn.transactionStatus),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Pay Now section
+            SafeArea(child: _buildPayNowSection(isTablet)),
+          ],
+        )
+
     );
   }
 
