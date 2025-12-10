@@ -60,14 +60,6 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
     }
   }
 
- /* Future<void> getTransactionHistory() async {
-    DbConnections dbConnections = DbConnections();
-    transactionList = await dbConnections.getAllTransactions(selectedYear, selectedMonth);
-    setState(() {
-      transactionList = transactionList;
-    });
-  }
-*/
 
   Future<void> getTransactionHistory() async {
     setState(() => isLoading = true);
@@ -380,39 +372,37 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
   // 🔹 PAY NOW HANDLER
   // -------------------------------
   Future<void> _handlePayNow() async {
-    final dataString =
-    await SharedPreferenceHelper.getString(AppConstants.userData);
+    final dataString = await SharedPreferenceHelper.getString(AppConstants.userData);
 
-    if (dataString != null) {
-      final data = jsonDecode(dataString);
-      String email = data['Email'] ?? '';
-      String fullName = data['FullName'] ?? '';
-      String mobileNum = data['MobileNumber'] ?? '';
-
-      Razorpaybl().openCheckout(
-          _amountController.text, int.parse(mobileNum), email, fullName);
-    } else {
-      final dialog = AwesomeDialog(
-        context: context,
-        animType: AnimType.leftSlide,
-        dialogType: DialogType.noHeader,
-        showCloseIcon: false,
-        dismissOnTouchOutside: false,
-        customHeader: const Icon(
-          Icons.error,
-          color: Colors.blue,
-          size: 80,
-        ),
-        title: 'Info',
-        desc: 'Please Login Before Pay!',
-      );
-
-      dialog.show();
-      Future.delayed(const Duration(seconds: 2), () {
-        dialog.dismiss();
-      });
+    if (dataString == null) {
+      // show login warning...
+      return;
     }
+
+    setState(() => isLoading = true);   // 🔵 start loading
+
+    final data = jsonDecode(dataString);
+
+    Razorpaybl().openCheckout(
+        _amountController.text,
+        int.parse(data['MobileNumber']),
+        data['Email'],
+        data['FullName'],
+
+            (bool success) async {   // 👈 CALLBACK HERE
+          if (success) {
+            print("Payment successful → Refreshing list");
+            await getTransactionHistory();
+          } else {
+            print("Payment failed → Still refresh list");
+            await getTransactionHistory();
+          }
+
+          setState(() => isLoading = false); // 🔴 stop loader
+        }
+    );
   }
+
 
   // -------------------------------
   // 🔹 PAY NOW UI SECTION

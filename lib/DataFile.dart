@@ -465,9 +465,15 @@ class Razorpaybl {
   late BuildContext context;
   int GlobalAmount = 0;
 
-  void openCheckout(String amount, int mobileNumber, String emailid,
-      String Name) async {
+  void openCheckout(
+      String amount,
+      int mobileNumber,
+      String emailid,
+      String Name,
+      Function(bool) onPaymentCompleted,  // 👈 callback added
+      ) async {
     GlobalAmount = int.parse(amount);
+
     Razorpay razorpay = Razorpay();
     var options = {
       'key': 'rzp_live_RGb6Xk82bK2ItR',
@@ -477,79 +483,71 @@ class Razorpaybl {
       'retry': {'enabled': true, 'max_count': 1},
       'send_sms_hash': true,
       'prefill': {'contact': mobileNumber, 'email': emailid},
-      'external': {
-        'wallets': ['paytm']
-      }
+      'external': {'wallets': ['paytm']}
     };
 
-    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
-    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
+    // PASS CALLBACK TO HANDLERS
+    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS,
+            (resp) => handlePaymentSuccessResponse(resp, onPaymentCompleted));
+
+    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR,
+            (resp) => handlePaymentErrorResponse(resp, onPaymentCompleted));
+
     razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWalletSelected);
+
     razorpay.open(options);
   }
+  void handlePaymentSuccessResponse(
+      PaymentSuccessResponse response,
+      Function(bool) onPaymentCompleted
+      ) async {
 
-  void handlePaymentErrorResponse(PaymentFailureResponse response) async {
     final prefs = await SharedPreferences.getInstance();
-    final dataString = prefs.getString(AppConstants.userData);
-    if (dataString != null) {
-      final data = jsonDecode(dataString);
-      UserTransactions ufs = UserTransactions(
-        username: data['Email'].toString(),
-        // Handle potential null value
-        transactionAmount: GlobalAmount.toString(),
-        // Get amount from response if available
-        transactionId: response.code?.toString() ?? '',
-        createdAt: DateTime.now().toIso8601String(),
-        // Use proper timestamp
-        transactionMode: response.message?.toString() ?? '',
-        transactionStatus: "Failed",
-      );
-      bool isback = await saveTransactionToDatabase(
-          ufs, response as PaymentSuccessResponse);
-      final dialog = AwesomeDialog(
-        context: context,
-        animType: AnimType.leftSlide,
-        dialogType: DialogType.noHeader,
-        // Prevent default header
-        showCloseIcon: false,
-        dismissOnTouchOutside: false,
-        customHeader: Icon(
-          Icons.error,
-          color: Colors.red,
-          size: 80,
-        ),
-        title: 'Failed',
-        desc: 'Payment Failed!',
-      );
+    final data = jsonDecode(prefs.getString(AppConstants.userData)!);
 
-      dialog.show();
-      Future.delayed(Duration(seconds: 2), () {
-        dialog.dismiss(); // Close the dialog
+    UserTransactions ufs = UserTransactions(
+      username: data['Email'].toString(),
+      transactionAmount: GlobalAmount.toString(),
+      transactionId: response.paymentId.toString(),
+      createdAt: DateTime.now().toIso8601String(),
+      transactionMode: response.signature.toString(),
+      transactionStatus: "1",  // success
+    );
 
-      });
-    }
+    bool saved = await saveTransactionToDatabase(ufs, response);
+
+    onPaymentCompleted(saved);  // 🔥 CALL UI CALLBACK
   }
 
+  void handlePaymentErrorResponse(
+      PaymentFailureResponse response,
+      Function(bool) onPaymentCompleted
+      ) async {
 
-  void handlePaymentSuccessResponse(PaymentSuccessResponse response) async {
     final prefs = await SharedPreferences.getInstance();
-    final dataString = prefs.getString(AppConstants.userData);
-    if (dataString != null) {
-      final data = jsonDecode(dataString);
-      UserTransactions ufs = UserTransactions(
-        username: data['Email'].toString(),
-        transactionAmount: GlobalAmount.toString(),
+    final data = jsonDecode(prefs.getString(AppConstants.userData)!);
 
-        transactionId: response.paymentId?.toString() ?? '',
-          createdAt: DateTime.now().toIso8601String(),
-        transactionMode: response.signature.toString(),
-        transactionStatus: "success",
+    UserTransactions ufs = UserTransactions(
+      username: data['Email'].toString(),
+      transactionAmount: GlobalAmount.toString(),
+      transactionId: response.code?.toString() ?? '',
+      createdAt: DateTime.now().toIso8601String(),
+      transactionMode: response.message ?? '',
+      transactionStatus: "0",
+    );
 
-      );
-      bool result = await saveTransactionToDatabase(ufs, response);
+    bool saved = await saveTransactionToDatabase(
+      ufs,
+      PaymentSuccessResponse(
+        response.code?.toString(),  // paymentId
+        null,                       // orderId
+        null,null                       // signature
+      ),
+    );
 
-    }
+    onPaymentCompleted(false);
   }
+
 
   Future<bool> saveTransactionToDatabase(UserTransactions transaction,
       PaymentSuccessResponse response) async {
