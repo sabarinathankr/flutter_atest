@@ -5,6 +5,7 @@ import 'package:ate/ui/widgets/statcard.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../db_connection/DBConnections.dart';
 import '../models/sales_data.dart';
 
 
@@ -23,44 +24,29 @@ class AdminDashboard extends StatefulWidget {
   State<AdminDashboard> createState() => _AdminDashboardState();
 }
 
-class _AdminDashboardState extends State<AdminDashboard> {
+class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObserver {
   List<dynamic> dynamicList = [];
-  final TextEditingController _nameController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
-  File? _selectedFile;
-  String? _fileName;
-  String? _fileType;
-
-  // Pick file
-  Future<void> _pickCustomMediaFile() async {
-    final XFile? file = await _picker.pickImage(source: ImageSource.gallery);
-    if (file != null) {
-      setState(() {
-        _selectedFile = File(file.path);
-        _fileName = file.name;
-        _fileType = "Image";
-      });
-    }
+  bool isLoading = false;
+  int userCount =0;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    getUserCount();
   }
 
-  void _clearSelectedFile() {
+  Future<void> getUserCount() async {
+    setState(() => isLoading = true);
+
+    DbConnections dbConnections = DbConnections();
+     userCount =
+    await dbConnections.getUserCount();
+
     setState(() {
-      _selectedFile = null;
-      _fileName = null;
-      _fileType = null;
+      userCount =userCount;
+      isLoading = false;
     });
   }
-
-  String _getFileSizeString(int bytes) {
-    double kb = bytes / 1024;
-    double mb = kb / 1024;
-    if (mb >= 1) {
-      return "${mb.toStringAsFixed(2)} MB";
-    } else {
-      return "${kb.toStringAsFixed(2)} KB";
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -119,7 +105,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             children: [
               StatCard(
                   title: 'Total Users',
-                  value: dynamicList.length.toString(),
+                  value: userCount.toString(),
                   icon: Icons.people,
                   color: Colors.blue,
                   change: '+12%',

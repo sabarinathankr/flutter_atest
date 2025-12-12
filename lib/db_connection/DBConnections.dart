@@ -165,6 +165,26 @@ class DbConnections
   }
 
 
+  Future<int> getUserCount() async {
+    final db = await Db.create(connectionstrion());
+    await db.open();
+    var collection = db.collection("UserForms");
+
+    try {
+      // Count all documents
+      int totalCount = await collection.count();
+      print("Total documents in UserForms: $totalCount");
+
+      return totalCount;
+
+    } catch (e) {
+      print("Error: $e");
+      return 0;
+    } finally {
+      await db.close();
+    }
+  }
+
 
 
   InsertData(UserForms ufs,BuildContext context) async

@@ -47,7 +47,7 @@ class StatCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    change,
+                    "",
                     style: TextStyle(
                       color: Colors.green,
                       fontSize: isTablet ? 12 : 10,
