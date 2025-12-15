@@ -11,12 +11,10 @@ import '../models/sales_data.dart';
 
 
 class AdminDashboard extends StatefulWidget {
-  final List<SalesData> data;
   final Function setStateCallback;
 
   const AdminDashboard({
     super.key,
-    required this.data,
     required this.setStateCallback,
   });
 

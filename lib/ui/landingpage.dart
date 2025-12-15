@@ -36,13 +36,6 @@ class _LandingPageState extends State<LandingPage>
   bool _hideadmin = true;
   TabController? _tabController;
 
-  final List<SalesData> data = [
-    SalesData('Jan', 35),
-    SalesData('Feb', 28),
-    SalesData('Mar', 34),
-    SalesData('Apr', 32),
-    SalesData('May', 40),
-  ];
 
   @override
   void initState() {
@@ -106,7 +99,6 @@ class _LandingPageState extends State<LandingPage>
       ),
       if (!_hideadmin)
         AdminDashboard(
-          data: data,
           setStateCallback: setState,
         ),
     ];
