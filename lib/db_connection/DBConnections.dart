@@ -18,6 +18,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import '../main.dart';
+import '../models/announcementModel.dart';
 import '../models/user_forms.dart';
 
 
@@ -164,6 +165,25 @@ class DbConnections
     }
   }
 
+
+  /// check announcements
+  Future<List<AnnouncementModel>> checkAnnouncements() async {
+    final db = await Db.create(connectionstrion());
+    await db.open();
+    var collection = db.collection("Announcements");
+
+    try {
+      final documents = await collection.find().toList();
+      // Convert each document into UploadPostModel
+      List<AnnouncementModel> announcement = documents.map((doc) => AnnouncementModel.fromMap(doc)).toList();
+      return announcement;
+    } catch (e) {
+      print('Error fetching posts: $e');
+      return [];
+    } finally {
+      await db.close();
+    }
+  }
 
   Future<int> getUserCount() async {
     final db = await Db.create(connectionstrion());

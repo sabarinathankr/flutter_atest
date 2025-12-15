@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'package:ate/models/announcementModel.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'db_connection/DBConnections.dart';
 import 'ui/landingpage.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -25,14 +27,15 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
+    checkAnnouncement();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Listen for connectivity changes
       Connectivity().onConnectivityChanged.listen((_) async {
         bool online = await hasInternet();
 
         if (!online) {
-          _showAppStuckDialog("No Internet Connection", "Please check your network settings.",Icons.wifi_off);
+          _showAppStuckDialog("No Internet Connection",
+              "Please check your network settings.", Icons.wifi_off);
         } else {
           _hideNetworkDialog();
         }
@@ -46,8 +49,23 @@ class _MyAppState extends State<MyApp> {
   Future<void> checkInitialNetwork() async {
     bool online = await hasInternet();
     if (!online) {
-      _showAppStuckDialog("No Internet Connection", "Please check your network settings.",Icons.wifi_off);
+      _showAppStuckDialog("No Internet Connection",
+          "Please check your network settings.", Icons.wifi_off);
     }
+  }
+
+  void checkAnnouncement() async {
+    DbConnections dbConnections = DbConnections();
+    List<AnnouncementModel> announcements =
+        await dbConnections.checkAnnouncements();
+
+    if (announcements != null && announcements.isNotEmpty) {
+      AnnouncementModel announcement = announcements[0];
+      if(announcement.isDisplay == true){
+        _showAppStuckDialog(announcement.tittle, announcement.description, Icons.info);
+      }
+    }
+
   }
 
   void _showAppStuckDialog(String title, String description, IconData icon) {
@@ -74,7 +92,6 @@ class _MyAppState extends State<MyApp> {
               children: [
                 Icon(icon, color: Colors.blue, size: 90),
                 const SizedBox(height: 20),
-
                 Text(
                   title,
                   style: const TextStyle(
@@ -84,9 +101,7 @@ class _MyAppState extends State<MyApp> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 10),
-
                 Text(
                   description,
                   style: const TextStyle(
@@ -95,7 +110,6 @@ class _MyAppState extends State<MyApp> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 30),
               ],
             ),
@@ -104,7 +118,6 @@ class _MyAppState extends State<MyApp> {
       },
     );
   }
-
 
   /// ✅ Automatically closes when internet returns
   void _hideNetworkDialog() {
