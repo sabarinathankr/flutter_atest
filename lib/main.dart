@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
         bool online = await hasInternet();
 
         if (!online) {
-          _showNetworkDialog();
+          _showAppStuckDialog("No Internet Connection", "Please check your network settings.",Icons.wifi_off);
         } else {
           _hideNetworkDialog();
         }
@@ -46,48 +46,57 @@ class _MyAppState extends State<MyApp> {
   Future<void> checkInitialNetwork() async {
     bool online = await hasInternet();
     if (!online) {
-      _showNetworkDialog();
+      _showAppStuckDialog("No Internet Connection", "Please check your network settings.",Icons.wifi_off);
     }
   }
 
-  /// 🚫 FULL-SCREEN NON-DISMISSIBLE NETWORK ERROR SCREEN
-  void _showNetworkDialog() {
+  void _showAppStuckDialog(String title, String description, IconData icon) {
     if (isDialogOpen) return;
     isDialogOpen = true;
 
     showGeneralDialog(
       context: navigatorKey.currentContext!,
       barrierDismissible: false,
-      barrierColor: Colors.black87,     // dark background
+
+      // 👇 Background dim (optional)
+      barrierColor: Colors.white.withOpacity(0.6),
+
       transitionDuration: const Duration(milliseconds: 200),
+
       pageBuilder: (context, anim1, anim2) {
         return Material(
-          color: Colors.black.withOpacity(0.85), // full overlay
+          // 👇 Full-screen background is now WHITE
+          color: Colors.white,
+
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.wifi_off, color: Colors.white, size: 90),
-                SizedBox(height: 20),
+              children: [
+                Icon(icon, color: Colors.blue, size: 90),
+                const SizedBox(height: 20),
+
                 Text(
-                  "No Internet Connection",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
+                  title,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 26,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 10),
+
+                const SizedBox(height: 10),
+
                 Text(
-                  "Please check your network settings.",
-                  style: TextStyle(
-                    color: Colors.white70,
+                  description,
+                  style: const TextStyle(
+                    color: Colors.black54,
                     fontSize: 18,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 30),
-                CircularProgressIndicator(color: Colors.white),
+
+                const SizedBox(height: 30),
               ],
             ),
           ),
@@ -95,6 +104,7 @@ class _MyAppState extends State<MyApp> {
       },
     );
   }
+
 
   /// ✅ Automatically closes when internet returns
   void _hideNetworkDialog() {
