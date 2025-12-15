@@ -74,50 +74,55 @@ class _MyAppState extends State<MyApp> {
 
     showGeneralDialog(
       context: navigatorKey.currentContext!,
-      barrierDismissible: false,
+      barrierDismissible: false, // cannot dismiss by tap
 
-      // 👇 Background dim (optional)
       barrierColor: Colors.white.withOpacity(0.6),
-
       transitionDuration: const Duration(milliseconds: 200),
 
       pageBuilder: (context, anim1, anim2) {
-        return Material(
-          // 👇 Full-screen background is now WHITE
-          color: Colors.white,
+        return WillPopScope(
+          onWillPop: () async => false, // ❌ BLOCK BACK BUTTON
+          child: Material(
+            color: Colors.white, // white full-screen background
 
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: Colors.blue, size: 90),
-                const SizedBox(height: 20),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: Colors.blue, size: 90),
+                  const SizedBox(height: 20),
+
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 18,
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      fontSize: 18,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 30),
-              ],
+
+                  const SizedBox(height: 30),
+                ],
+              ),
             ),
           ),
         );
       },
     );
   }
+
 
   /// ✅ Automatically closes when internet returns
   void _hideNetworkDialog() {
