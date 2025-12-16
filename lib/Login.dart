@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ate/db_connection/DBConnections.dart';
+import 'package:ate/ui/landingpage.dart';
 import 'package:ate/utils/app_constants.dart';
 import 'package:ate/utils/shared_preference.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
           dialog.dismiss();
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => MyApp()),
+            MaterialPageRoute(builder: (context) => const LandingPage()),
                 (_) => false,
           );
         });

@@ -24,7 +24,7 @@ class _MyHomePageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _mobileController = TextEditingController();
   final _genderController = TextEditingController();
-  final _dobController = TextEditingController();
+
 
 
   File? _image;
@@ -42,7 +42,6 @@ class _MyHomePageState extends State<RegisterPage> {
     _passwordController.dispose();
     _mobileController.dispose();
     _genderController.dispose();
-    _dobController.dispose();
 
     super.dispose();
   }
@@ -65,8 +64,7 @@ class _MyHomePageState extends State<RegisterPage> {
           _emailController.text.isEmpty ||
           _passwordController.text.isEmpty ||
           _mobileController.text.isEmpty ||
-          _selectedGender == null ||
-          _dobController.text.isEmpty) {
+          _selectedGender == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('⚠️ Please fill all fields.')),
         );
@@ -80,7 +78,6 @@ class _MyHomePageState extends State<RegisterPage> {
           Password: _passwordController.text,
           MobileNumber: _mobileController.text,
           Gender: _selectedGender.toString(),
-          Dateofbirth: _dobController.text,
           Profile: base64Image ?? '', // ✅ Pass empty string if null
           UsrType: 'User',
         );
@@ -142,22 +139,8 @@ class _MyHomePageState extends State<RegisterPage> {
     );
   }
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
 
-    if (picked != null) {
-      // Format the date (e.g., yyyy-MM-dd)
-      String formattedDate = "${picked.year}-${picked.month.toString().padLeft(
-          2, '0')}-${picked.day.toString().padLeft(2, '0')}";
 
-      setState(() {
-        _dobController.text = formattedDate;
-      });
-    }
   }
 
     @override
@@ -230,29 +213,6 @@ class _MyHomePageState extends State<RegisterPage> {
                      },
                    ),
                  ) ,) ,
-                  Visibility(visible: true,child:Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: TextFormField(
-                      controller: _dobController,
-                      readOnly: true, // prevent keyboard from appearing
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.calendar_today),
-                        labelText: "Select Date",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.blue),
-                        ),
-                      ),
-                      onTap: () => _selectDate(context),
-                    ),
-                  ), ),
                   Visibility(visible: true,child:ElevatedButton.icon(
                     onPressed: _submitForm,
                     icon: Icon(Icons.account_box_outlined, color: Colors.black),

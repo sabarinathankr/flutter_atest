@@ -8,7 +8,6 @@ class UserForms {
   String Password;
   String MobileNumber;
   String Gender;
-  String Dateofbirth;
   String Profile;
   String UsrType;
 
@@ -19,7 +18,6 @@ class UserForms {
     required this.Password,
     required this.MobileNumber,
     required this.Gender,
-    required this.Dateofbirth,
     required this.Profile,
     required this.UsrType,
   });
@@ -33,7 +31,6 @@ class UserForms {
       Password: map['Password'],
       MobileNumber: map['MobileNumber'],
       Gender: map['Gender'],
-      Dateofbirth: map['Dateofbirth'],
       Profile: map['Profile'],
       UsrType: map['UsrType'],
     );
@@ -47,7 +44,6 @@ class UserForms {
       'Password': Password,
       'MobileNumber': MobileNumber,
       'Gender': Gender,
-      'Dateofbirth': Dateofbirth,
       'Profile': Profile,
       'UsrType':UsrType,
     };

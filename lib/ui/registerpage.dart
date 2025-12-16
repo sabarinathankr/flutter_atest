@@ -8,14 +8,14 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/user_forms.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class RegisterPage1 extends StatefulWidget {
+  const RegisterPage1({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<RegisterPage1> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends State<RegisterPage1> {
   final _formKey = GlobalKey<FormState>();
 
   // Controllers
@@ -25,19 +25,11 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _mobileController = TextEditingController();
   final _genderController = TextEditingController();
-  final _dobController = TextEditingController();
 
   File? _image;
   var base64Image;
   final ImagePicker _picker = ImagePicker();
   String? _selectedGender;
-  final List<String> videoIds = [
-    'nM7D8B6aBUY',
-    'HPbwEvMwpnk',
-    'Rtvax982IDo',
-    'jEWU0jLyGnw',
-    'BGM3kJoNVIk',
-  ];
 
   @override
   void initState() {
@@ -52,7 +44,6 @@ class _RegisterPageState extends State<RegisterPage> {
     _passwordController.dispose();
     _mobileController.dispose();
     _genderController.dispose();
-    _dobController.dispose();
 
     super.dispose();
   }
@@ -77,7 +68,6 @@ class _RegisterPageState extends State<RegisterPage> {
             Password: _passwordController.text,
             MobileNumber: _mobileController.text,
             Gender: _selectedGender.toString(),
-            Dateofbirth: _dobController.text,
             Profile: base64Image,
             UsrType: 'User');
         DbConnections dbConnections =  DbConnections();
@@ -129,25 +119,6 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-
-    if (picked != null) {
-      // Format the date (e.g., yyyy-MM-dd)
-      String formattedDate =
-          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-
-      setState(() {
-        _dobController.text = formattedDate;
-      });
-    }
   }
 
   @override
@@ -228,32 +199,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           _selectedGender = value;
                         });
                       },
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: true,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: TextFormField(
-                      controller: _dobController,
-                      readOnly: true, // prevent keyboard from appearing
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.calendar_today),
-                        labelText: "Select Date",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.blue),
-                        ),
-                      ),
-                      onTap: () => _selectDate(context),
                     ),
                   ),
                 ),

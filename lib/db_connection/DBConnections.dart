@@ -1,6 +1,7 @@
 import 'package:ate/DataFile.dart' hide UserForms;
 import 'package:ate/db_connection/MongoService.dart';
 import 'package:ate/models/upload_post_model.dart';
+import 'package:ate/ui/landingpage.dart';
 import 'package:ate/utils/app_constants.dart';
 import 'package:ate/utils/shared_preference.dart';
 import 'package:flutter/cupertino.dart';
@@ -195,7 +196,7 @@ class DbConnections {
 
     if (result.isSuccess) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userData', jsonEncode(ufs.toMap()));
+      await prefs.setString( AppConstants.userData, jsonEncode(ufs.toMap()));
       print(prefs);
       // Show success dialog
       final dialog = AwesomeDialog(
@@ -220,7 +221,7 @@ class DbConnections {
         dialog.dismiss(); // Close the dialog
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => MyApp()),
+          MaterialPageRoute(builder: (context) => LandingPage()),
         );
       });
 
