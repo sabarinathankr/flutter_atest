@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'package:ate/db_connection/DBConnections.dart';
+import 'package:ate/db_connection/MongoService.dart';
 import 'package:ate/models/user_transactions.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
@@ -18,8 +19,8 @@ class Razorpaybl {
 
   int GlobalAmount = 0;
 
-  void openCheckout(String amount, int Contact, String emailid,
-      String Name) async {
+  void openCheckout(
+      String amount, int Contact, String emailid, String Name) async {
     GlobalAmount = int.parse(amount);
     Razorpay razorpay = Razorpay();
     var options = {
@@ -57,8 +58,7 @@ class Razorpaybl {
         Transactionmode: response.message?.toString() ?? '',
         TransactionStatus: "Failed",
       );
-      await saveTransactionToDatabase(
-          ufs, response as PaymentSuccessResponse);
+      await saveTransactionToDatabase(ufs, response as PaymentSuccessResponse);
       final dialog = AwesomeDialog(
         context: context,
         animType: AnimType.leftSlide,
@@ -78,11 +78,9 @@ class Razorpaybl {
       dialog.show();
       Future.delayed(Duration(seconds: 2), () {
         dialog.dismiss(); // Close the dialog
-
       });
     }
   }
-
 
   void handlePaymentSuccessResponse(PaymentSuccessResponse response) async {
     final prefs = await SharedPreferences.getInstance();
@@ -91,22 +89,17 @@ class Razorpaybl {
       final data = jsonDecode(dataString);
       UserTransactions ufs = UserTransactions(
         Username: data['Email'] ?? '',
-
         TransactionAmount: GlobalAmount.toString(),
-
         Transactionid: response.paymentId?.toString() ?? '',
-
         Transactionmode: response.signature.toString(),
         TransactionStatus: "success",
-
       );
       bool result = await saveTransactionToDatabase(ufs, response);
-
     }
   }
 
-  Future<bool> saveTransactionToDatabase(UserTransactions transaction,
-      PaymentSuccessResponse response) async {
+  Future<bool> saveTransactionToDatabase(
+      UserTransactions transaction, PaymentSuccessResponse response) async {
     // Validate inputs
     if (transaction == null || response == null) {
       print(
@@ -116,17 +109,15 @@ class Razorpaybl {
 
     Db? db;
     try {
-      DbConnections dbConnections = DbConnections();
-      db = await Db.create(dbConnections
-          .connectionstrion());
+      db = await Db.create(MongoService().dbKey());
       await db.open();
 
       var collection = db.collection("UserTransactions");
       var result = await collection.insertOne(transaction.toMap());
 
       if (result.isSuccess) {
-        print("Transaction saved successfully - Payment ID: ${response
-            .paymentId}");
+        print(
+            "Transaction saved successfully - Payment ID: ${response.paymentId}");
         return true;
       } else {
         print("Failed to save transaction - Payment ID: ${response.paymentId}");
@@ -173,8 +164,7 @@ class Razorpaybl {
   Future<Map<String, dynamic>?> fetchPaymentDetails(String paymentId) async {
     try {
       final String basicAuth =
-          'Basic ${base64Encode(
-          utf8.encode('$keyId:rzp_test_R754PXB5l89CS1'))}';
+          'Basic ${base64Encode(utf8.encode('$keyId:rzp_test_R754PXB5l89CS1'))}';
 
       final response = await http.get(
         Uri.parse('https://api.razorpay.com/v1/payments/paymentId'),

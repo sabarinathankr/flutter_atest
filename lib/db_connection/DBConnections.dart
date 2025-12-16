@@ -21,23 +21,17 @@ import 'dart:developer';
 import '../main.dart';
 import '../models/announcementModel.dart';
 import '../models/user_forms.dart';
+import 'GlobalErrorHandler.dart';
 
+class DbConnections {
+  bool resultype = false;
 
-
-class DbConnections
-{
-  bool resultype=false;
-  String connectionstrion() {
-    String Connection="mongodb+srv://atestrazorpay:OucgJLTdGOHrpWwq@cluster0.a1okps9.mongodb.net/AtestCollections?retryWrites=true&w=majority&appName=Cluster0";
-    return Connection;
-  }
-
-  Future<String> loginData(String username, String password, BuildContext context) async {
+  Future<String> loginData(
+      String username, String password, BuildContext context) async {
     try {
       WidgetsFlutterBinding.ensureInitialized();
 
-      final db = await Db.create(connectionstrion());
-      await db.open();
+      final db = await MongoService().getDb();
 
       var collection = db.collection("UserForms");
 
@@ -50,7 +44,7 @@ class DbConnections
       await db.close();
 
       if (result.isEmpty) {
-        return "failure";  // ❗ invalid credentials
+        return "failure"; // ❗ invalid credentials
       }
 
       // Save user locally
@@ -64,112 +58,58 @@ class DbConnections
         return "error"; // ❗ local storage issue
       }
 
-      return "success";  // ❗ login successful
-
+      return "success"; // ❗ login successful
     } catch (e) {
+      GlobalErrorHandler.handle(e);
       return "error"; // ❗ DB or other error
     }
   }
 
+  Future<void> uploadPost(UploadPostModel uploadPostModel,
+      void Function(bool isSuccess, String msg) onSuccess) async {
+    try {
+      final db = await MongoService().getDb();
+      var collection = db.collection("AdminPost");
+      var result = await collection.insertOne(uploadPostModel.toMap());
 
-  Future<void> uploadPost(UploadPostModel uploadPostModel,  void Function(bool isSuccess, String msg) onSuccess) async{
-    final db = await Db.create(connectionstrion());
-    await db.open();
-    var collection = db.collection("AdminPost");
-    var result = await collection.insertOne(uploadPostModel.toMap());
-
-    if (result.isSuccess) {
-      print('success');
-      onSuccess(true, 'Upload successful');
-    } else {
-      print('error');
-      onSuccess(false, result.errmsg ?? 'Unknown error occurred');
-    }
-
-  }
-  Future<void> getAllPost(UploadPostModel uploadPostModel,  void Function(bool isSuccess) onSuccess) async{
-    final db = await Db.create(connectionstrion());
-    await db.open();
-    var collection = db.collection("AdminPost");
-    var result = await collection.insertOne(uploadPostModel.toMap());
-
-    if (result.isSuccess) {
-      print('success');
-      onSuccess(true);
-    } else {
-      print('error');
-      onSuccess(false);
+      if (result.isSuccess) {
+        print('success');
+        onSuccess(true, 'Upload successful');
+      } else {
+        print('error');
+        onSuccess(false, result.errmsg ?? 'Unknown error occurred');
+      }
+    } catch (e) {
+      GlobalErrorHandler.handle(e);
+    } finally {
+      await MongoService().close();
     }
   }
-
 
   /// Fetch all posts
-
-  /*Future<List<UploadPostModel>> getAllPosts() async {
-    Db? db;
-
-    try {
-      db = await Db.create(connectionstrion());
-      await db.open(); // ✅ now safely inside try
-
-      final collection = db.collection("AdminPost");
-      final documents = await collection.find().toList();
-
-      return documents
-          .map((doc) => UploadPostModel.fromMap(doc))
-          .toList();
-
-    } on MongoDartError catch (e) {
-      // 🔥 Mongo specific errors
-      if (e.message.contains('authentication failed')) {
-        print('❌ MongoDB Auth Error: Invalid username or password');
-      } else {
-        print('❌ MongoDB Error: ${e.message}');
-      }
-      return [];
-
-    } on SocketException {
-      print('❌ Network Error: No internet connection');
-      return [];
-
-    } catch (e) {
-      print('❌ Unknown Error: $e');
-      return [];
-
-    } finally {
-      if (db != null && db.isConnected) {
-        await db.close();
-      }
-    }
-  }
-*/
-
-
   Future<List<UploadPostModel>> getAllPosts() async {
-    final db = await MongoService().getDb();
-    await db.open();
-    var collection = db.collection("AdminPost");
-
     try {
+      final db = await MongoService().getDb();
+      var collection = db.collection("AdminPost");
       final documents = await collection.find().toList();
       // Convert each document into UploadPostModel
-      List<UploadPostModel> posts = documents.map((doc) => UploadPostModel.fromMap(doc)).toList();
+      List<UploadPostModel> posts =
+          documents.map((doc) => UploadPostModel.fromMap(doc)).toList();
       return posts;
     } catch (e) {
       print('Error fetching posts: $e');
+      GlobalErrorHandler.handle(e);
       return [];
     } finally {
-      await db.close();
+      await MongoService().close();
     }
   }
 
   /// Fetch all transactions
   Future<List<UserTransactions>> getAllTransactions(int year, int month) async {
-    final db = await Db.create(connectionstrion());
-    await db.open();
-    var collection = db.collection("UserTransactions");
-
     try {
+      final db = await MongoService().getDb();
+      var collection = db.collection("UserTransactions");
       final email = await SharedPreferenceHelper.getPreferenceEmail();
 
       // Define month range
@@ -177,9 +117,8 @@ class DbConnections
       var endDate = DateTime(year, month + 1, 1);
 
       // Fetch all transactions for this user
-      var documents = await collection.find(
-          where.eq('username', email)
-      ).toList();
+      var documents =
+          await collection.find(where.eq('username', email)).toList();
 
       // Filter in Dart since createdAt is stored as a string
       var monthlyData = documents.where((doc) {
@@ -188,71 +127,69 @@ class DbConnections
         var createdAt = DateTime.tryParse(doc['createdAt']);
         if (createdAt == null) return false;
 
-        return createdAt.isAfter(startDate.subtract(const Duration(milliseconds: 1))) &&
+        return createdAt
+                .isAfter(startDate.subtract(const Duration(milliseconds: 1))) &&
             createdAt.isBefore(endDate);
       }).toList();
 
       // ✅ Convert filtered documents into UserTransactions objects
-      List<UserTransactions> posts = monthlyData
-          .map((doc) => UserTransactions.fromMap(doc))
-          .toList();
+      List<UserTransactions> posts =
+          monthlyData.map((doc) => UserTransactions.fromMap(doc)).toList();
 
       print('Success: ${posts.length} transactions found');
       return posts;
     } catch (e) {
       print('Error fetching posts: $e');
+      GlobalErrorHandler.handle(e);
       return [];
     } finally {
-      await db.close();
+      await MongoService().close();
     }
   }
 
-
   /// check announcements
   Future<List<AnnouncementModel>> checkAnnouncements() async {
-    final db = await Db.create(connectionstrion());
-    await db.open();
-    var collection = db.collection("Announcements");
-
     try {
+      final db = await MongoService().getDb();
+      var collection = db.collection("Announcements");
       final documents = await collection.find().toList();
       // Convert each document into UploadPostModel
-      List<AnnouncementModel> announcement = documents.map((doc) => AnnouncementModel.fromMap(doc)).toList();
+      List<AnnouncementModel> announcement =
+          documents.map((doc) => AnnouncementModel.fromMap(doc)).toList();
       return announcement;
     } catch (e) {
       print('Error fetching posts: $e');
+      GlobalErrorHandler.handle(e);
       return [];
     } finally {
-      await db.close();
+      await MongoService().close();
     }
   }
 
   Future<int> getUserCount() async {
-    final db = await Db.create(connectionstrion());
-    await db.open();
-    var collection = db.collection("UserForms");
-
     try {
       // Count all documents
+      final db = await MongoService().getDb();
+      var collection = db.collection("UserForms");
       int totalCount = await collection.count();
       print("Total documents in UserForms: $totalCount");
 
       return totalCount;
-
     } catch (e) {
       print("Error: $e");
+      GlobalErrorHandler.handle(e);
       return 0;
     } finally {
-      await db.close();
+      await MongoService().close();
     }
   }
 
+  InsertData(UserForms ufs, BuildContext context) async {
+
+    try{
 
 
-  InsertData(UserForms ufs,BuildContext context) async
-  {
-    final db = await Db.create(connectionstrion());
-    await db.open();
+    final db = await MongoService().getDb();
     var collection = db.collection("UserForms");
     var result = await collection.insertOne(ufs.toMap());
 
@@ -264,7 +201,8 @@ class DbConnections
       final dialog = AwesomeDialog(
         context: context,
         animType: AnimType.leftSlide,
-        dialogType: DialogType.noHeader, // Prevent default header
+        dialogType: DialogType.noHeader,
+        // Prevent default header
         showCloseIcon: false,
         dismissOnTouchOutside: false,
         customHeader: Icon(
@@ -294,7 +232,8 @@ class DbConnections
       final dialog = AwesomeDialog(
         context: context,
         animType: AnimType.leftSlide,
-        dialogType: DialogType.noHeader, // Prevent default header
+        dialogType: DialogType.noHeader,
+        // Prevent default header
         showCloseIcon: false,
         dismissOnTouchOutside: false,
         customHeader: Icon(
@@ -310,22 +249,27 @@ class DbConnections
 
       Future.delayed(Duration(seconds: 2), () {
         dialog.dismiss(); // Close the dialog
-
       });
       print('Failed to insert user');
     }
 
-
     await db.close();
-    return(resultype);
+    return (resultype);
+    } catch (e) {
+      print("Error: $e");
+      GlobalErrorHandler.handle(e);
+      return resultype;
+    } finally {
+      await MongoService().close();
+    }
   }
+
   Future<void> RemoveUser(String username) async {
     Db? db;
-    db = await Db.create(connectionstrion());
-    await db.open();
+    db = await MongoService().getDb();
     var collection = db.collection("UserForms");
     var result = await collection.deleteOne(where.eq('Email', username));
-    if(result.isSuccess) {
+    if (result.isSuccess) {
       print("Deleted");
     }
     await db.close();
@@ -335,11 +279,12 @@ class DbConnections
   Future<List<String>> ShowUser() async {
     Db? db;
     try {
-      db = await Db.create(connectionstrion());
-      await db.open();
+      db = await MongoService().getDb();
       var collection = db.collection("UserForms");
 
-      var result = await collection.find(where.fields(['FullName']).excludeFields(['_id'])).toList();
+      var result = await collection
+          .find(where.fields(['FullName']).excludeFields(['_id']))
+          .toList();
 
       print('Raw result: $result');
       print('Result type: ${result.runtimeType}');
@@ -351,19 +296,21 @@ class DbConnections
       }
 
       // Extract FullName values from the documents
-      List<String> stringList = result.map((doc) {
-        if (doc is Map) {
-          // Extract the FullName field value
-          String fullName = doc['FullName']?.toString() ?? '';
-          print('Extracted FullName: $fullName');
-          return fullName;
-        }
-        return '';
-      }).where((name) => name.isNotEmpty).toList(); // Filter out empty names
+      List<String> stringList = result
+          .map((doc) {
+            if (doc is Map) {
+              // Extract the FullName field value
+              String fullName = doc['FullName']?.toString() ?? '';
+              print('Extracted FullName: $fullName');
+              return fullName;
+            }
+            return '';
+          })
+          .where((name) => name.isNotEmpty)
+          .toList(); // Filter out empty names
 
       print('Final stringList: $stringList');
       return stringList;
-
     } catch (e) {
       print('Error in ShowUser: $e');
       return <String>[];
@@ -375,15 +322,15 @@ class DbConnections
       }
     }
   }
-  Future<String> getSessionEmail() async{
-    String email="";
-    final dataString =await SharedPreferenceHelper.getString(AppConstants.userData);
 
-
+  Future<String> getSessionEmail() async {
+    String email = "";
+    final dataString =
+        await SharedPreferenceHelper.getString(AppConstants.userData);
 
     if (dataString != null) {
       final data = jsonDecode(dataString);
-      email=data['Email'].toString();
+      email = data['Email'].toString();
       return email;
     }
 
@@ -393,14 +340,11 @@ class DbConnections
   Future<Map<String, List<String>>> TransactionDetails() async {
     Db? db;
     try {
-      db = await Db.create(connectionstrion());
-      await db.open();
+      db = await MongoService().getDb();
       var collection = db.collection("UserTransactions");
-      String sessionemail= await getSessionEmail();
-      var result = await collection.find(
-          where.eq('username', sessionemail)
-      ).toList();
-
+      String sessionemail = await getSessionEmail();
+      var result =
+          await collection.find(where.eq('username', sessionemail)).toList();
 
       print('Raw result: $result');
       print('Result type: ${result.runtimeType}');
@@ -415,45 +359,61 @@ class DbConnections
       }
 
       // Extract FullName values from the documents
-      List<String> stringtransactionList = result.map((doc) {
-        if (doc is Map) {
-          // Extract the FullName field value
-          String amount = doc['transactionAmount']?.toString() ?? '';
-          return "RS "+amount;
-        }
-        return '';
-      }).where((name) => name.isNotEmpty).toList(); // Filter out empty names
+      List<String> stringtransactionList = result
+          .map((doc) {
+            if (doc is Map) {
+              // Extract the FullName field value
+              String amount = doc['transactionAmount']?.toString() ?? '';
+              return "RS " + amount;
+            }
+            return '';
+          })
+          .where((name) => name.isNotEmpty)
+          .toList(); // Filter out empty names
 
-      List<String> transactionid = result.map((doc) {
-        if (doc is Map) {
-          // Extract the FullName field value
-          String transactionid = doc['transactionId']?.toString() ?? '';
-          return transactionid;
-        }
-        return '';
-      }).where((name) => name.isNotEmpty).toList();
+      List<String> transactionid = result
+          .map((doc) {
+            if (doc is Map) {
+              // Extract the FullName field value
+              String transactionid = doc['transactionId']?.toString() ?? '';
+              return transactionid;
+            }
+            return '';
+          })
+          .where((name) => name.isNotEmpty)
+          .toList();
 
-      List<String> Transactiondate = result.map((doc) {
-        if (doc is Map) {
-          // Extract the FullName field value
-          String Transactiondate = doc['transactionDate']?.toString() ?? '';
-          return Transactiondate;
-        }
-        return '';
-      }).where((name) => name.isNotEmpty).toList();
+      List<String> Transactiondate = result
+          .map((doc) {
+            if (doc is Map) {
+              // Extract the FullName field value
+              String Transactiondate = doc['transactionDate']?.toString() ?? '';
+              return Transactiondate;
+            }
+            return '';
+          })
+          .where((name) => name.isNotEmpty)
+          .toList();
 
-      List<String> Transactiontime = result.map((doc) {
-        if (doc is Map) {
-          // Extract the FullName field value
-          String Transactiontime = doc['transactionTime']?.toString() ?? '';
-          return Transactiontime;
-        }
-        return '';
-      }).where((name) => name.isNotEmpty).toList();
+      List<String> Transactiontime = result
+          .map((doc) {
+            if (doc is Map) {
+              // Extract the FullName field value
+              String Transactiontime = doc['transactionTime']?.toString() ?? '';
+              return Transactiontime;
+            }
+            return '';
+          })
+          .where((name) => name.isNotEmpty)
+          .toList();
 
       print('Final stringList: $stringtransactionList');
-      return {'amounts': stringtransactionList, 'transactionIds': transactionid,'Transactiondate':Transactiondate,'Transactiontime':Transactiontime};
-
+      return {
+        'amounts': stringtransactionList,
+        'transactionIds': transactionid,
+        'Transactiondate': Transactiondate,
+        'Transactiontime': Transactiontime
+      };
     } catch (e) {
       print('Error in ShowUser: $e');
       return {
@@ -468,5 +428,4 @@ class DbConnections
       }
     }
   }
-
 }
