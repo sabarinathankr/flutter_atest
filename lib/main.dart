@@ -81,7 +81,7 @@ class _MyAppState extends State<MyApp> {
 
       pageBuilder: (context, anim1, anim2) {
         return WillPopScope(
-          onWillPop: () async => false, // ❌ BLOCK BACK BUTTON
+          onWillPop: () async => true, // ❌ BLOCK BACK BUTTON
           child: Material(
             color: Colors.white, // white full-screen background
 

@@ -1,4 +1,5 @@
 import 'package:ate/DataFile.dart' hide UserForms;
+import 'package:ate/db_connection/MongoService.dart';
 import 'package:ate/models/upload_post_model.dart';
 import 'package:ate/utils/app_constants.dart';
 import 'package:ate/utils/shared_preference.dart';
@@ -103,8 +104,49 @@ class DbConnections
 
 
   /// Fetch all posts
+
+  /*Future<List<UploadPostModel>> getAllPosts() async {
+    Db? db;
+
+    try {
+      db = await Db.create(connectionstrion());
+      await db.open(); // ✅ now safely inside try
+
+      final collection = db.collection("AdminPost");
+      final documents = await collection.find().toList();
+
+      return documents
+          .map((doc) => UploadPostModel.fromMap(doc))
+          .toList();
+
+    } on MongoDartError catch (e) {
+      // 🔥 Mongo specific errors
+      if (e.message.contains('authentication failed')) {
+        print('❌ MongoDB Auth Error: Invalid username or password');
+      } else {
+        print('❌ MongoDB Error: ${e.message}');
+      }
+      return [];
+
+    } on SocketException {
+      print('❌ Network Error: No internet connection');
+      return [];
+
+    } catch (e) {
+      print('❌ Unknown Error: $e');
+      return [];
+
+    } finally {
+      if (db != null && db.isConnected) {
+        await db.close();
+      }
+    }
+  }
+*/
+
+
   Future<List<UploadPostModel>> getAllPosts() async {
-    final db = await Db.create(connectionstrion());
+    final db = await MongoService().getDb();
     await db.open();
     var collection = db.collection("AdminPost");
 
