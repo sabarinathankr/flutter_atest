@@ -78,7 +78,7 @@ class _MyHomePageState extends State<RegisterPage> {
           Password: _passwordController.text,
           MobileNumber: _mobileController.text,
           Gender: _selectedGender.toString(),
-          Profile: base64Image ?? '', // ✅ Pass empty string if null
+          Profile: '', // ✅ Pass empty string if null
           UsrType: 'User',
         );
 
@@ -157,7 +157,7 @@ class _MyHomePageState extends State<RegisterPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  GestureDetector(
+                  /*GestureDetector(
                     onTap: _pickImage,
                     child: CircleAvatar(
                       radius: 60,
@@ -168,8 +168,8 @@ class _MyHomePageState extends State<RegisterPage> {
                           ? Icon(Icons.camera_alt, size: 40)
                           : null,
                     ),
-                  ),
-                  SizedBox(height: 20),
+                  ),*/
+                  SizedBox(height: 50),
                   _buildTextField(
                       label: 'Full Name', controller: _nameController,inputfeildtype: TextInputType.name,icontype:Icons.person),
                   _buildTextField(label: 'Email', controller: _emailController,inputfeildtype: TextInputType.emailAddress,icontype: Icons.email),
