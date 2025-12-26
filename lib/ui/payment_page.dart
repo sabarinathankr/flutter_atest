@@ -11,6 +11,9 @@ import 'package:excel/excel.dart';
 
 import '../DataFile.dart';
 import '../db_connection/DBConnections.dart';
+import '../models/OrderError.dart';
+import '../models/OrderSuccess.dart';
+import '../network/apiservice.dart';
 import '../utils/app_constants.dart';
 import '../utils/shared_preference.dart';
 
@@ -368,10 +371,31 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
     );
   }
 
+  void createOrder() async {
+    try {
+      final result = await RazorpayApiService.createOrder(
+        amount: int.parse(_amountController.text),
+        currency: 'INR',
+        receipt: 'rcptid_11',
+      );
+
+      if (result is OrderSuccess) {
+        print('Order Created: ${result.id}');
+        _handlePayNow(result.id);
+      } else if (result is OrderError) {
+        print('Error: ${result.description}');
+      }
+
+    } catch (e) {
+      print('Exception: $e');
+    }
+  }
+
+
   // -------------------------------
   // 🔹 PAY NOW HANDLER
   // -------------------------------
-  Future<void> _handlePayNow() async {
+  Future<void> _handlePayNow(String id) async {
     final dataString = await SharedPreferenceHelper.getString(AppConstants.userData);
 
     if (dataString == null) {
@@ -384,6 +408,7 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
     final data = jsonDecode(dataString);
 
     Razorpaybl().openCheckout(
+        id,
         _amountController.text,
         int.parse(data['MobileNumber']),
         data['Email'],
@@ -427,7 +452,7 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
           ),
           const SizedBox(width: 16),
           ElevatedButton.icon(
-            onPressed: _handlePayNow,
+            onPressed: createOrder,
             icon: const Icon(Icons.qr_code_scanner),
             label: const Text('Pay Now'),
             style: ElevatedButton.styleFrom(
