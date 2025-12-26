@@ -176,7 +176,7 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
                 txn.username,
                 txn.transactionId,
                 txn.transactionAmount,
-                txn.createdAt ?? "-",
+                txn.createdAt,
                 statusText,
               ];
             }).toList(),
@@ -373,6 +373,16 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
 
   void createOrder() async {
     try {
+
+      final dataString = await SharedPreferenceHelper.getString(AppConstants.userData);
+
+      if(dataString == null || dataString.isEmpty){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('⚠️ Please login to proceed')),
+        );
+        return;
+      }
+
       final result = await RazorpayApiService.createOrder(
         amount: int.parse(_amountController.text),
         currency: 'INR',

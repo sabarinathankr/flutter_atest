@@ -368,7 +368,7 @@ required this. createdAt,
       transactionId: map['transactionId'],
         createdAt: map['createdAt'],
       transactionMode: map['transactionMode'],
-        transactionStatus:map['transactionAmount']
+        transactionStatus:map['transactionStatus']
 
     );
   }

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'dart:typed_data';
 
+import '../DataFile.dart';
 import '../Login.dart';
 import '../Register.dart';
+import '../db_connection/DBConnections.dart';
 import '../models/sales_data.dart';
 import '../utils/shared_preference.dart';
 import '../utils/app_constants.dart'; // 👈 Make sure AppConstants.userData is defined here
@@ -31,15 +33,37 @@ class _UserDashboardTabState extends State<UserDashboardTab>
     with WidgetsBindingObserver {
   bool _isLoginVisible = true;
   bool _isLogoutVisible = false;
+  bool isLoading = false;
+  int totalContribution = 0;
   String Username = "User";
   Uint8List? Profilepic;
-  int userTtlContrib = 23;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _checkLoginStatus(); // 👈 Check login state at start
+    getTotalContribution();
+  }
+
+  Future<void> getTotalContribution() async {
+    final email = await SharedPreferenceHelper.getPreferenceEmail();
+    if (email == null || email.isEmpty) {
+      return;
+    }
+    setState(() => isLoading = true);
+    DbConnections dbConnections = DbConnections();
+    List<UserTransactions> list = await dbConnections.getTotalContribution();
+    if (list.isNotEmpty) {
+      for (var item in list) {
+        totalContribution =
+            totalContribution + int.parse(item.transactionAmount);
+      }
+    }
+    setState(() {
+      totalContribution = totalContribution;
+      isLoading = false;
+    });
   }
 
   @override
@@ -72,7 +96,7 @@ class _UserDashboardTabState extends State<UserDashboardTab>
   // 👇 Check login status and update buttons
   Future<void> _checkLoginStatus() async {
     final dataString =
-    await SharedPreferenceHelper.getString(AppConstants.userData);
+        await SharedPreferenceHelper.getString(AppConstants.userData);
     if (dataString != null && dataString.isNotEmpty) {
       final data = jsonDecode(dataString);
       setState(() {
@@ -163,8 +187,7 @@ class _UserDashboardTabState extends State<UserDashboardTab>
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => RegisterPage()),
+                      MaterialPageRoute(builder: (context) => RegisterPage()),
                     );
                   },
                   icon: const Icon(Icons.app_registration),
@@ -206,7 +229,7 @@ class _UserDashboardTabState extends State<UserDashboardTab>
                     });
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (context) => LandingPage()),
-                          (Route<dynamic> route) => false,
+                      (Route<dynamic> route) => false,
                     );
                   },
                   icon: const Icon(Icons.logout),
@@ -214,8 +237,7 @@ class _UserDashboardTabState extends State<UserDashboardTab>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.lime,
                     foregroundColor: Colors.black,
-                    padding:
-                    EdgeInsets.symmetric(vertical: isTablet ? 20 : 16),
+                    padding: EdgeInsets.symmetric(vertical: isTablet ? 20 : 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -279,12 +301,12 @@ class _UserDashboardTabState extends State<UserDashboardTab>
       mainAxisSpacing: 16,
       childAspectRatio: isTablet ? 1.5 : 1.2,
       children: [
-        _buildStatCard('Total Contribution', userTtlContrib.toString(),
-            Icons.currency_rupee, Colors.orange, '+23%', isTablet),
-        _buildStatCard('Favourite', '0', Icons.article, Colors.green,
-            '+8%', isTablet),
+        _buildStatCard('Total Contribution', totalContribution.toString(),
+            Icons.currency_rupee, Colors.orange, isTablet),
+        /*   _buildStatCard('Favourite', '0', Icons.article, Colors.green,
+             isTablet),
         _buildStatCard('Notifications', '0', Icons.notifications,
-            Colors.purple, '+5%', isTablet),
+            Colors.purple,  isTablet),*/
       ],
     );
   }
@@ -301,8 +323,8 @@ class _UserDashboardTabState extends State<UserDashboardTab>
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color,
-      String change, bool isTablet) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color, bool isTablet) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -325,13 +347,13 @@ class _UserDashboardTabState extends State<UserDashboardTab>
                 Icon(icon, color: color, size: isTablet ? 32 : 24),
                 Container(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.green.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    change,
+                    "",
                     style: TextStyle(
                       color: Colors.green,
                       fontSize: isTablet ? 12 : 10,

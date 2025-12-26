@@ -106,6 +106,70 @@ class DbConnections {
     }
   }
 
+  //total contribution
+  Future<List<UserTransactions>> getTotalContribution() async {
+    try {
+      final db = await MongoService().getDb();
+      var collection = db.collection("UserTransactions");
+      final email = await SharedPreferenceHelper.getPreferenceEmail();
+
+      print(email);
+      // Fetch all transactions for this user
+      var documents = await collection.find(
+          where
+              .eq("username", email)
+              .eq("transactionStatus", "1")
+      ).toList();
+
+
+      // Filter in Dart since createdAt is stored as a string
+      var monthlyData = documents.toList();
+
+      // ✅ Convert filtered documents into UserTransactions objects
+      List<UserTransactions> posts =
+      monthlyData.map((doc) => UserTransactions.fromMap(doc)).toList();
+
+      print('Success: ${posts.length} transactions found');
+      return posts;
+    } catch (e) {
+      print('Error fetching posts: $e');
+      GlobalErrorHandler.handle(e);
+      return [];
+    } finally {
+      await MongoService().close();
+    }
+  }
+
+  //get total revenue
+  Future<List<UserTransactions>> getTotalRevenue() async {
+    try {
+      final db = await MongoService().getDb();
+      var collection = db.collection("UserTransactions");
+      final email = await SharedPreferenceHelper.getPreferenceEmail();
+
+
+      // Fetch all transactions for this user
+      var documents =
+      await collection.find(where.eq('transactionStatus', "1")).toList();
+
+      // Filter in Dart since createdAt is stored as a string
+      var monthlyData = documents.toList();
+
+      // ✅ Convert filtered documents into UserTransactions objects
+      List<UserTransactions> posts =
+      monthlyData.map((doc) => UserTransactions.fromMap(doc)).toList();
+
+      print('Success: ${posts.length} transactions found');
+      return posts;
+    } catch (e) {
+      print('Error fetching posts: $e');
+      GlobalErrorHandler.handle(e);
+      return [];
+    } finally {
+      await MongoService().close();
+    }
+  }
+
   /// Fetch all transactions
   Future<List<UserTransactions>> getAllTransactions(int year, int month) async {
     try {
@@ -181,7 +245,7 @@ class DbConnections {
       GlobalErrorHandler.handle(e);
       return 0;
     } finally {
-      await MongoService().close();
+      // await MongoService().close();
     }
   }
 
@@ -324,109 +388,4 @@ class DbConnections {
     }
   }
 
-  Future<String> getSessionEmail() async {
-    String email = "";
-    final dataString =
-        await SharedPreferenceHelper.getString(AppConstants.userData);
-
-    if (dataString != null) {
-      final data = jsonDecode(dataString);
-      email = data['Email'].toString();
-      return email;
-    }
-
-    return email;
-  }
-
-  Future<Map<String, List<String>>> TransactionDetails() async {
-    Db? db;
-    try {
-      db = await MongoService().getDb();
-      var collection = db.collection("UserTransactions");
-      String sessionemail = await getSessionEmail();
-      var result =
-          await collection.find(where.eq('username', sessionemail)).toList();
-
-      print('Raw result: $result');
-      print('Result type: ${result.runtimeType}');
-
-      // Check if result is empty
-      if (result.isEmpty) {
-        print('No documents found');
-        return {
-          'amounts': [],
-          'transactionIds': [],
-        };
-      }
-
-      // Extract FullName values from the documents
-      List<String> stringtransactionList = result
-          .map((doc) {
-            if (doc is Map) {
-              // Extract the FullName field value
-              String amount = doc['transactionAmount']?.toString() ?? '';
-              return "RS " + amount;
-            }
-            return '';
-          })
-          .where((name) => name.isNotEmpty)
-          .toList(); // Filter out empty names
-
-      List<String> transactionid = result
-          .map((doc) {
-            if (doc is Map) {
-              // Extract the FullName field value
-              String transactionid = doc['transactionId']?.toString() ?? '';
-              return transactionid;
-            }
-            return '';
-          })
-          .where((name) => name.isNotEmpty)
-          .toList();
-
-      List<String> Transactiondate = result
-          .map((doc) {
-            if (doc is Map) {
-              // Extract the FullName field value
-              String Transactiondate = doc['transactionDate']?.toString() ?? '';
-              return Transactiondate;
-            }
-            return '';
-          })
-          .where((name) => name.isNotEmpty)
-          .toList();
-
-      List<String> Transactiontime = result
-          .map((doc) {
-            if (doc is Map) {
-              // Extract the FullName field value
-              String Transactiontime = doc['transactionTime']?.toString() ?? '';
-              return Transactiontime;
-            }
-            return '';
-          })
-          .where((name) => name.isNotEmpty)
-          .toList();
-
-      print('Final stringList: $stringtransactionList');
-      return {
-        'amounts': stringtransactionList,
-        'transactionIds': transactionid,
-        'Transactiondate': Transactiondate,
-        'Transactiontime': Transactiontime
-      };
-    } catch (e) {
-      print('Error in ShowUser: $e');
-      return {
-        'amounts': [],
-        'transactionIds': [],
-      };
-    } finally {
-      try {
-        await db?.close();
-      } catch (e) {
-        print('Error closing database: $e');
-      }
-    }
-  }
 }

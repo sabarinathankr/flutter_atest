@@ -5,6 +5,7 @@ import 'package:ate/ui/widgets/statcard.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../DataFile.dart';
 import '../db_connection/DBConnections.dart';
 import '../models/sales_data.dart';
 
@@ -26,11 +27,30 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
   List<dynamic> dynamicList = [];
   bool isLoading = false;
   int userCount =0;
+  int totalRevenue =0;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     getUserCount();
+    getTotalRevenue();
+  }
+
+  Future<void> getTotalRevenue() async {
+    setState(() => isLoading = true);
+    DbConnections dbConnections = DbConnections();
+    List<UserTransactions> list =
+    await dbConnections.getTotalRevenue();
+    if(list.isNotEmpty){
+      for (var item in list) {
+        totalRevenue = totalRevenue + int.parse(item.transactionAmount);
+      }
+
+    }
+    setState(() {
+      totalRevenue = totalRevenue;
+      isLoading = false;
+    });
   }
 
   Future<void> getUserCount() async {
@@ -108,28 +128,28 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
                   color: Colors.blue,
                   change: '+12%',
                   isTablet: false),
-              StatCard(
+             /* StatCard(
                 title: 'Active Posts',
                 value: '0',
                 icon: Icons.article,
                 color: Colors.green,
                 change: '+8%',
                 isTablet: false,
-              ),
+              ),*/
               StatCard(
                   title: 'Revenue',
-                  value: '₹23',
+                  value: totalRevenue.toString(),
                   icon: Icons.currency_rupee,
                   color: Colors.orange,
                   change: '+23%',
                   isTablet: false),
-              StatCard(
+             /* StatCard(
                   title: 'Notifications',
                   value: '0',
                   icon: Icons.notifications,
                   color: Colors.purple,
                   change: '+5%',
-                  isTablet: false),
+                  isTablet: false),*/
             ],
           ),
           SizedBox(height: 24),
@@ -157,7 +177,7 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
 
               ,
 
-              _buildActionCard('Highlight', Icons.highlight, Colors.orange,
+             /* _buildActionCard('Highlight', Icons.highlight, Colors.orange,
                   _openHighlightSheet, isTablet),
               _buildActionCard('Send Notify', Icons.notifications, Colors.green,
                   _openNotifySheet, isTablet),
@@ -166,7 +186,7 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
               _buildActionCard('Analytics', Icons.analytics, Colors.teal,
                   _openAnalyticsSheet, isTablet),
               _buildActionCard('Settings', Icons.settings, Colors.grey,
-                  _openSettingsSheet, isTablet),
+                  _openSettingsSheet, isTablet),*/
             ],
           ),
           SizedBox(height: 32),
