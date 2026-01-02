@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../DataFile.dart';
 import '../db_connection/DBConnections.dart';
+import '../l10n/app_localizations.dart';
 import '../models/sales_data.dart';
 
 
@@ -91,8 +92,7 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Admin Dashboard',
+                Text(AppLocalizations.of(context).translate('admin_dashboard'),
                   style: TextStyle(
                     fontSize: isTablet ? 32 : 24,
                     fontWeight: FontWeight.bold,
@@ -100,8 +100,7 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
                   ),
                 ),
                 SizedBox(height: 8),
-                Text(
-                  'Welcome back! Here\'s what\'s happening today.',
+                Text(AppLocalizations.of(context).translate('dashboard_description'),
                   style: TextStyle(
                     fontSize: isTablet ? 18 : 16,
                     color: Colors.white.withOpacity(0.9),
@@ -122,41 +121,26 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
             childAspectRatio: isTablet ? 1.5 : 1.2,
             children: [
               StatCard(
-                  title: 'Total Users',
+                  title: AppLocalizations.of(context).translate('total_users'),
                   value: userCount.toString(),
                   icon: Icons.people,
                   color: Colors.blue,
                   change: '+12%',
                   isTablet: false),
-             /* StatCard(
-                title: 'Active Posts',
-                value: '0',
-                icon: Icons.article,
-                color: Colors.green,
-                change: '+8%',
-                isTablet: false,
-              ),*/
               StatCard(
-                  title: 'Revenue',
+                  title: AppLocalizations.of(context).translate('revenue'),
                   value: totalRevenue.toString(),
                   icon: Icons.currency_rupee,
                   color: Colors.orange,
                   change: '+23%',
                   isTablet: false),
-             /* StatCard(
-                  title: 'Notifications',
-                  value: '0',
-                  icon: Icons.notifications,
-                  color: Colors.purple,
-                  change: '+5%',
-                  isTablet: false),*/
             ],
           ),
           SizedBox(height: 24),
 
           // ===== Quick Actions =====
           Text(
-            'Quick Actions',
+            AppLocalizations.of(context).translate('quick_actions'),
             style: TextStyle(
               fontSize: isTablet ? 24 : 20,
               fontWeight: FontWeight.bold,
@@ -172,21 +156,9 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
             mainAxisSpacing: 16,
             childAspectRatio: isTablet ? 1.3 : 1.1,
             children: [
-              _buildActionCard('Create Post', Icons.post_add, Colors.blue,
-                  _openCreatePostSheet, isTablet)
+              _buildActionCard(AppLocalizations.of(context).translate('create_post'), Icons.post_add, Colors.blue,
+                  _openCreatePostSheet, isTablet),
 
-              ,
-
-             /* _buildActionCard('Highlight', Icons.highlight, Colors.orange,
-                  _openHighlightSheet, isTablet),
-              _buildActionCard('Send Notify', Icons.notifications, Colors.green,
-                  _openNotifySheet, isTablet),
-              _buildActionCard('UserMgmt', Icons.people_alt, Colors.purple,
-                  _openUserMgmtSheet, isTablet),
-              _buildActionCard('Analytics', Icons.analytics, Colors.teal,
-                  _openAnalyticsSheet, isTablet),
-              _buildActionCard('Settings', Icons.settings, Colors.grey,
-                  _openSettingsSheet, isTablet),*/
             ],
           ),
           SizedBox(height: 32),

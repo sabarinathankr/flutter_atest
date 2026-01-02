@@ -11,6 +11,7 @@ import 'package:excel/excel.dart';
 
 import '../DataFile.dart';
 import '../db_connection/DBConnections.dart';
+import '../l10n/app_localizations.dart';
 import '../models/OrderError.dart';
 import '../models/OrderSuccess.dart';
 import '../network/apiservice.dart';
@@ -31,7 +32,7 @@ class PaymentsTab extends StatefulWidget {
   State<PaymentsTab> createState() => _PaymentsTabState();
 }
 
-class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver{
+class _PaymentsTabState extends State<PaymentsTab> with WidgetsBindingObserver {
   bool isLoading = true;
   int selectedYear = DateTime.now().year;
   int selectedMonth = DateTime.now().month;
@@ -63,13 +64,12 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
     }
   }
 
-
   Future<void> getTransactionHistory() async {
     setState(() => isLoading = true);
 
     DbConnections dbConnections = DbConnections();
     List<UserTransactions> list =
-    await dbConnections.getAllTransactions(selectedYear, selectedMonth);
+        await dbConnections.getAllTransactions(selectedYear, selectedMonth);
 
     setState(() {
       transactionList = list;
@@ -84,7 +84,7 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
     final pdf = pw.Document();
 
     final String statusText =
-    txn.transactionStatus == "1" ? "Success" : "Failed";
+        txn.transactionStatus == "1" ? "Success" : "Failed";
 
     pdf.addPage(
       pw.Page(
@@ -125,8 +125,10 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Export Transactions"),
-        content: const Text("Choose export format:"),
+        title:
+            Text(AppLocalizations.of(context).translate('export_transactions')),
+        content: Text(
+            AppLocalizations.of(context).translate('choose_export_format')),
         actions: [
           TextButton(
             onPressed: () {
@@ -159,7 +161,7 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
         build: (context) => [
           pw.Text("Transaction Report",
               style:
-              pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold)),
+                  pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 20),
           pw.Table.fromTextArray(
             headers: [
@@ -171,7 +173,7 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
             ],
             data: transactionList.map((txn) {
               final statusText =
-              txn.transactionStatus == "1" ? "Success" : "Failed";
+                  txn.transactionStatus == "1" ? "Success" : "Failed";
               return [
                 txn.username,
                 txn.transactionId,
@@ -198,17 +200,11 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
     var excel = Excel.createExcel();
     Sheet sheet = excel['Transactions'];
 
-    sheet.appendRow([
-      "Username",
-      "Transaction ID",
-      "Amount (₹)",
-      "Created Time",
-      "Status"
-    ]);
+    sheet.appendRow(
+        ["Username", "Transaction ID", "Amount (₹)", "Created Time", "Status"]);
 
     for (var txn in transactionList) {
-      final statusText =
-      txn.transactionStatus == "1" ? "Success" : "Failed";
+      final statusText = txn.transactionStatus == "1" ? "Success" : "Failed";
       sheet.appendRow([
         txn.username,
         txn.transactionId,
@@ -235,7 +231,8 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Select Month & Year"),
+          title:
+              Text(AppLocalizations.of(context).translate('select_month_year')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -244,7 +241,8 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
                 value: tempYear,
                 items: List.generate(6, (index) {
                   int year = DateTime.now().year - 2 + index;
-                  return DropdownMenuItem(value: year, child: Text(year.toString()));
+                  return DropdownMenuItem(
+                      value: year, child: Text(year.toString()));
                 }),
                 onChanged: (value) {
                   if (value != null) {
@@ -259,7 +257,8 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
                 value: tempMonth,
                 items: List.generate(12, (index) {
                   int month = index + 1;
-                  return DropdownMenuItem(value: month, child: Text(month.toString()));
+                  return DropdownMenuItem(
+                      value: month, child: Text(month.toString()));
                 }),
                 onChanged: (value) {
                   if (value != null) {
@@ -273,7 +272,7 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: Text(AppLocalizations.of(context).translate('cancel')),
             ),
             ElevatedButton(
               onPressed: () {
@@ -285,14 +284,13 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
                 Navigator.pop(context);
                 getTransactionHistory(); // 🔄 Refresh list with new filters
               },
-              child: const Text("Apply"),
+              child: Text(AppLocalizations.of(context).translate('apply')),
             ),
           ],
         );
       },
     );
   }
-
 
   // -------------------------------
   // 🔹 UI BUILD
@@ -302,83 +300,101 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
     final isTablet = widget.isTablet;
 
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _openFilterDialog,
-            tooltip: "Filter by Month & Year",
-          ),
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: exportAllTransactions,
-            tooltip: "Export Transactions",
-          ),
-        ],
-      ),
+        appBar: AppBar(
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.filter_list),
+              onPressed: _openFilterDialog,
+              tooltip: "Filter by Month & Year",
+            ),
+            IconButton(
+              icon: const Icon(Icons.download),
+              onPressed: exportAllTransactions,
+              tooltip: "Export Transactions",
+            ),
+          ],
+        ),
 
-      // 🔹 BODY WITH PAY NOW AT BOTTOM
+        // 🔹 BODY WITH PAY NOW AT BOTTOM
         body: Column(
           children: [
             Expanded(
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator())     // 🔵 LOADING
+                  ? const Center(
+                      child: CircularProgressIndicator()) // 🔵 LOADING
                   : transactionList.isEmpty
-                  ? const Center(                                      // 🔴 NO DATA
-                child: Text(
-                  "No transactions found",
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
-                ),
-              )
-                  : ListView.builder(                                  // 🟢 SHOW LIST
-                itemCount: transactionList.length,
-                itemBuilder: (context, index) {
-                  final txn = transactionList[index];
-                  final statusText =
-                  txn.transactionStatus == "1" ? "Success" : "Failed";
+                      ? Center(
+                          // 🔴 NO DATA
+                          child:
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            child:
+                          Text(
+                            AppLocalizations.of(context)
+                                .translate('no_transaction_found'),
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                          ),
+                          )
+                        )
+                      : ListView.builder(
+                          // 🟢 SHOW LIST
+                          itemCount: transactionList.length,
+                          itemBuilder: (context, index) {
+                            final txn = transactionList[index];
+                            final statusText = txn.transactionStatus == "1"
+                                ? "Success"
+                                : "Failed";
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    child: ExpansionTile(
-                      title: Text(
-                        "${txn.username}\nAmount: ₹${txn.transactionAmount}",
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text("Status: $statusText\nTime: ${txn.createdAt ?? ''}"),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
-                        onPressed: () => downloadTransactionPDF(txn),
-                      ),
-                      children: [
-                        _buildDetailRow("Transaction ID", txn.transactionId),
-                        _buildDetailRow("Created Time", txn.createdAt ?? "-"),
-                        _buildDetailRow("Amount", "₹${txn.transactionAmount}"),
-                        _buildDetailRow("Status", txn.transactionStatus),
-                        const SizedBox(height: 10),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                            return Card(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              child: ExpansionTile(
+                                title: Text(
+                                  "${txn.username}\nAmount: ₹${txn.transactionAmount}",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                subtitle: Text(
+                                    "Status: $statusText\nTime: ${txn.createdAt ?? ''}"),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.picture_as_pdf,
+                                      color: Colors.redAccent),
+                                  onPressed: () => downloadTransactionPDF(txn),
+                                ),
+                                children: [
+                                  _buildDetailRow(
+                                      "Transaction ID", txn.transactionId),
+                                  _buildDetailRow(
+                                      "Created Time", txn.createdAt ?? "-"),
+                                  _buildDetailRow(
+                                      "Amount", "₹${txn.transactionAmount}"),
+                                  _buildDetailRow(
+                                      "Status", txn.transactionStatus),
+                                  const SizedBox(height: 10),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
             ),
 
             // Pay Now section
             SafeArea(child: _buildPayNowSection(isTablet)),
           ],
-        )
-
-    );
+        ));
   }
 
   void createOrder() async {
     try {
+      final dataString =
+          await SharedPreferenceHelper.getString(AppConstants.userData);
 
-      final dataString = await SharedPreferenceHelper.getString(AppConstants.userData);
-
-      if(dataString == null || dataString.isEmpty){
+      if (dataString == null || dataString.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('⚠️ Please login to proceed')),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)
+                  .translate('please_login_to_proceed'))),
         );
         return;
       }
@@ -395,25 +411,24 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
       } else if (result is OrderError) {
         print('Error: ${result.description}');
       }
-
     } catch (e) {
       print('Exception: $e');
     }
   }
 
-
   // -------------------------------
   // 🔹 PAY NOW HANDLER
   // -------------------------------
   Future<void> _handlePayNow(String id) async {
-    final dataString = await SharedPreferenceHelper.getString(AppConstants.userData);
+    final dataString =
+        await SharedPreferenceHelper.getString(AppConstants.userData);
 
     if (dataString == null) {
       // show login warning...
       return;
     }
 
-    setState(() => isLoading = true);   // 🔵 start loading
+    setState(() => isLoading = true); // 🔵 start loading
 
     final data = jsonDecode(dataString);
 
@@ -422,22 +437,19 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
         _amountController.text,
         int.parse(data['MobileNumber']),
         data['Email'],
-        data['FullName'],
+        data['FullName'], (bool success) async {
+      // 👈 CALLBACK HERE
+      if (success) {
+        print("Payment successful → Refreshing list");
+        await getTransactionHistory();
+      } else {
+        print("Payment failed → Still refresh list");
+        await getTransactionHistory();
+      }
 
-            (bool success) async {   // 👈 CALLBACK HERE
-          if (success) {
-            print("Payment successful → Refreshing list");
-            await getTransactionHistory();
-          } else {
-            print("Payment failed → Still refresh list");
-            await getTransactionHistory();
-          }
-
-          setState(() => isLoading = false); // 🔴 stop loader
-        }
-    );
+      setState(() => isLoading = false); // 🔴 stop loader
+    });
   }
-
 
   // -------------------------------
   // 🔹 PAY NOW UI SECTION
@@ -452,10 +464,10 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
             child: TextFormField(
               controller: _amountController,
               keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.currency_rupee),
-                labelText: "Amount",
+                labelText: AppLocalizations.of(context).translate('amount'),
                 border: OutlineInputBorder(),
               ),
             ),
@@ -464,7 +476,7 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
           ElevatedButton.icon(
             onPressed: createOrder,
             icon: const Icon(Icons.qr_code_scanner),
-            label: const Text('Pay Now'),
+            label: Text(AppLocalizations.of(context).translate('pay_now')),
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.symmetric(
                 vertical: isTablet ? 20 : 16,
@@ -484,27 +496,28 @@ class _PaymentsTabState extends State<PaymentsTab>   with WidgetsBindingObserver
     );
   }
 }
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 130,
-            child: Text(
-              "$label:",
-              style: const TextStyle(
-                  fontWeight: FontWeight.w600, color: Colors.grey),
-            ),
+
+Widget _buildDetailRow(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 130,
+          child: Text(
+            "$label:",
+            style: const TextStyle(
+                fontWeight: FontWeight.w600, color: Colors.grey),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w500),
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
 }

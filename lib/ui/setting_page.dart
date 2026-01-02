@@ -8,6 +8,8 @@ import '../DataFile.dart';
 import '../Login.dart';
 import '../Register.dart';
 import '../db_connection/DBConnections.dart';
+import '../l10n/app_localizations.dart';
+import '../main.dart';
 import '../models/sales_data.dart';
 import '../utils/shared_preference.dart';
 import '../utils/app_constants.dart'; // 👈 Make sure AppConstants.userData is defined here
@@ -153,7 +155,7 @@ class _UserDashboardTabState extends State<UserDashboardTab>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'User Dashboard',
+            AppLocalizations.of(context).translate('user_dashboard'),
             style: TextStyle(
               fontSize: isTablet ? 32 : 24,
               fontWeight: FontWeight.bold,
@@ -162,7 +164,7 @@ class _UserDashboardTabState extends State<UserDashboardTab>
           ),
           const SizedBox(height: 8),
           Text(
-            'Welcome back! Here\'s what\'s happening today.',
+    AppLocalizations.of(context).translate('dashboard_description'),
             style: TextStyle(
               fontSize: isTablet ? 18 : 16,
               color: Colors.white.withOpacity(0.9),
@@ -233,7 +235,7 @@ class _UserDashboardTabState extends State<UserDashboardTab>
                     );
                   },
                   icon: const Icon(Icons.logout),
-                  label: const Text('Logout'),
+                  label: Text( AppLocalizations.of(context).translate('logout')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.lime,
                     foregroundColor: Colors.black,
@@ -278,12 +280,12 @@ class _UserDashboardTabState extends State<UserDashboardTab>
           child: ElevatedButton.icon(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Edit Profile feature coming soon!')),
+                SnackBar(
+                    content: Text(AppLocalizations.of(context).translate('edit_profile_soon')))
               );
             },
             icon: const Icon(Icons.edit),
-            label: const Text('Edit Profile'),
+            label: Text(AppLocalizations.of(context).translate('edit_profile')),
             style: _buttonStyle(isTablet),
           ),
         ),
@@ -301,8 +303,12 @@ class _UserDashboardTabState extends State<UserDashboardTab>
       mainAxisSpacing: 16,
       childAspectRatio: isTablet ? 1.5 : 1.2,
       children: [
-        _buildStatCard('Total Contribution', totalContribution.toString(),
+        _buildStatCard(AppLocalizations.of(context).translate('total_contribution'), totalContribution.toString(),
             Icons.currency_rupee, Colors.orange, isTablet),
+
+        _buildLanguage(Colors.green,
+            isTablet),
+
         /*   _buildStatCard('Favourite', '0', Icons.article, Colors.green,
              isTablet),
         _buildStatCard('Notifications', '0', Icons.notifications,
@@ -383,7 +389,42 @@ class _UserDashboardTabState extends State<UserDashboardTab>
       ),
     );
   }
-
+  Widget _buildLanguage(
+       Color color, bool isTablet) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        padding: EdgeInsets.all(isTablet ? 20.0 : 16.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: [color.withOpacity(0.1), Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(AppLocalizations.of(context).translate('language')),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'en') {
+                  MyApp.setLocale(context, const Locale('en'));
+                } else {
+                  MyApp.setLocale(context, const Locale('ta'));
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(value: 'en', child: Text('English')),
+                const PopupMenuItem(value: 'ta', child: Text('தமிழ்')),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
   void _pickImage() {
     // Implement your image picker
   }

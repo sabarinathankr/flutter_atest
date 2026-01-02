@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../db_connection/DBConnections.dart';
+import '../l10n/app_localizations.dart';
 import '../models/upload_post_model.dart';
 
 class EnhancedPostTab extends StatefulWidget {
@@ -109,10 +110,10 @@ class _EnhancedPostTabState extends State<EnhancedPostTab> {
       ),
       child: Column(
         children: [
-          TextField(
+        /*  TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Search posts...',
+              hintText:  AppLocalizations.of(context).translate('search_posts'),
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -141,7 +142,7 @@ class _EnhancedPostTabState extends State<EnhancedPostTab> {
                 _searchQuery = value;
               });
             },
-          ),
+          ),*/
           const SizedBox(height: 12),
           /*SingleChildScrollView(
             scrollDirection: Axis.horizontal,

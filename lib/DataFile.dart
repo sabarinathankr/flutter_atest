@@ -523,6 +523,7 @@ class Razorpaybl {
       Function(bool) onPaymentCompleted
       ) async {
 
+    print("Payment error ${response.code??''}");
     final prefs = await SharedPreferences.getInstance();
     final data = jsonDecode(prefs.getString(AppConstants.userData)!);
 
@@ -535,14 +536,17 @@ class Razorpaybl {
       transactionStatus: "0",
     );
 
-    bool saved = await saveTransactionToDatabase(
-      ufs,
-      PaymentSuccessResponse(
-        response.code?.toString(),  // paymentId
-        null,                       // orderId
-        null,null                       // signature
-      ),
-    );
+    if(2 !=response.code){
+      bool saved = await saveTransactionToDatabase(
+        ufs,
+        PaymentSuccessResponse(
+            response.code?.toString(),  // paymentId
+            null,                       // orderId
+            null,null                       // signature
+        ),
+      );
+    }
+
 
     onPaymentCompleted(false);
   }

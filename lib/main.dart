@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:ate/models/announcementModel.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'db_connection/DBConnections.dart';
+import 'l10n/app_localizations.dart';
 import 'ui/landingpage.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -15,22 +17,54 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  static void setLocale(BuildContext context, Locale locale) {
+    final _MyAppState? state =
+    context.findAncestorStateOfType<_MyAppState>();
+    state?.setLocale(locale);
+  }
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Locale _currentLocale = const Locale('en');
+
+  void setLocale(Locale locale) {
+    setState(() {
+      _currentLocale = locale;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
+      locale: _currentLocale, // 👈 dynamic
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ta'),
+      ],
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      home: const AppBootstrap(), // 👈 move logic here
+      home: const AppBootstrap(),
     );
+
   }
 }
+
 
 
 class AppBootstrap extends StatefulWidget {

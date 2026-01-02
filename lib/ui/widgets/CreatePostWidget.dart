@@ -3,6 +3,7 @@ import 'package:ate/utils/shared_preference.dart';
 import 'package:flutter/material.dart';
 
 import '../../db_connection/DBConnections.dart';
+import '../../l10n/app_localizations.dart';
 
 class CreatePostWidget extends StatefulWidget {
   const CreatePostWidget({super.key});
@@ -34,7 +35,7 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
 
     String title = _titleController.text.trim();
     if (title.isEmpty) {
-      showMessage('Enter title');
+      showMessage('Enter tittle');
       return;
     }
 
@@ -116,19 +117,19 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
               children: [
                 const SizedBox(height: 30),
                 _buildTextField(
-                  label: 'Title',
+                  label: AppLocalizations.of(context).translate('tittle'),
                   controller: _titleController,
                   inputType: TextInputType.name,
                   icon: Icons.title,
                 ),
                 _buildTextField(
-                  label: 'Description',
+                  label: AppLocalizations.of(context).translate('description'),
                   controller: _descController,
                   inputType: TextInputType.multiline,
                   icon: Icons.description,
                 ),
                 _buildTextField(
-                  label: 'YouTube Link',
+                  label: AppLocalizations.of(context).translate('youtube_link'),
                   controller: _yTLinkController,
                   inputType: TextInputType.url,
                   icon: Icons.link,
@@ -139,7 +140,7 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: InputDecorator(
                     decoration: InputDecoration(
-                      labelText: 'Visibility',
+                      labelText: AppLocalizations.of(context).translate('visibility'),
                       prefixIcon: const Icon(Icons.visibility_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -149,11 +150,11 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                       child: DropdownButton<String>(
                         value: _selectedVisibility,
                         isExpanded: true,
-                        items: const [
+                        items: [
                           DropdownMenuItem(
-                              value: 'Private', child: Text('Private')),
+                              value: 'Private', child: Text(AppLocalizations.of(context).translate('private'))),
                           DropdownMenuItem(
-                              value: 'Public', child: Text('Public')),
+                              value: 'Public', child: Text(AppLocalizations.of(context).translate('public'))),
                         ],
                         onChanged: (value) {
                           setState(() {
@@ -169,8 +170,8 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                 ElevatedButton.icon(
                   onPressed: _isLoading ? null : _clickPublish,
                   icon: const Icon(Icons.publish, color: Colors.white),
-                  label: const Text(
-                    'Publish',
+                  label: Text(
+                    AppLocalizations.of(context).translate('publish'),
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
