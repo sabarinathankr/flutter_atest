@@ -398,7 +398,39 @@ class _PaymentsTabState extends State<PaymentsTab> with WidgetsBindingObserver {
         );
         return;
       }
+      final text = _amountController.text.trim();
 
+// ❌ Empty check
+      if (text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please enter amount")),
+        );
+        return;
+      }
+
+// ❌ Invalid number check
+      final amount = int.tryParse(text);
+      if (amount == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Invalid amount")),
+        );
+        return;
+      }
+
+// ❌ Minimum amount check
+      if (amount <= 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).translate('minimum_amount'),
+            ),
+          ),
+        );
+        return;
+      }
+
+// ✅ Success case
+      print("Amount = $amount");
       final result = await RazorpayApiService.createOrder(
         amount: int.parse(_amountController.text),
         currency: 'INR',

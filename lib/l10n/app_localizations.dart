@@ -17,6 +17,8 @@ class AppLocalizations {
   // 🔑 Language map
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
+      'app_name':'SETHU TRUST',
+      'brand_name':'Powered by\nWeTech Solutions',
       'title': 'ATEST',
       'search_posts': 'Search posts...',
       'helpful_tips': 'Helpful Tips',
@@ -50,8 +52,11 @@ class AppLocalizations {
       'please_login_to_proceed':'⚠️ Please login to proceed',
       'export_transactions':'Export Transactions',
       'choose_export_format':'Choose export format:',
+      'minimum_amount': 'Amount should greater then 200',
     },
     'ta': {
+      'app_name':'SETHU TRUST',
+      'brand_name':'Powered by\nWeTech Solutions',
       'title': 'ATEST',
       'search_posts': 'பதிவுகளைத் தேடுங்கள்...',
       'helpful_tips': 'பயனுள்ள குறிப்புகள்',
@@ -85,6 +90,7 @@ class AppLocalizations {
       'please_login_to_proceed':'⚠️ தொடர உள்நுழையவும்',
       'export_transactions':'ஏற்றுமதி பரிவர்த்தனைகள்',
       'choose_export_format':'வடிவமைப்பைத் தேர்ந்தெடுக்கவும்:',
+      'minimum_amount': 'Amount should greater then 200',
     },
   };
 

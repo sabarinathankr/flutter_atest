@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:ate/models/announcementModel.dart';
+import 'package:ate/ui/SplashScreen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -165,7 +166,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
 
   @override
   Widget build(BuildContext context) {
-    return const LandingPage();
+    return const SplashScreen();
   }
 }
 
