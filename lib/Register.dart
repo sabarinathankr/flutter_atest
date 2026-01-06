@@ -21,6 +21,8 @@ class _MyHomePageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
 
+  bool _isPasswordHidden = true;
+
   final _passwordController = TextEditingController();
   final _mobileController = TextEditingController();
   final _genderController = TextEditingController();
@@ -57,7 +59,17 @@ class _MyHomePageState extends State<RegisterPage> {
     }
   }
 
+  bool isValidPassword(String password) {
+    final passwordRegex = RegExp(
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$'
+    );
+
+    return passwordRegex.hasMatch(password);
+  }
+
   Future<void> _submitForm() async {
+
+
     if (_formKey.currentState!.validate()) {
       // Check if any mandatory fields are empty
       if (_nameController.text.isEmpty ||
@@ -70,7 +82,13 @@ class _MyHomePageState extends State<RegisterPage> {
         );
         return;
       }
-
+      String pwd = _passwordController.text.toString().trim();
+      if (!isValidPassword(pwd)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('⚠️ Password must contain at least 6 characters, one uppercase letter, one lowercase letter, one number, and one special character.Invalid password ')),
+        );
+        return;
+      }
       try {
         var user = UserForms(
           FullName: _nameController.text,
@@ -138,6 +156,58 @@ class _MyHomePageState extends State<RegisterPage> {
     ),
     );
   }
+
+  Widget _buildTextFieldWithPassword({
+    required String label,
+    required TextEditingController controller,
+    required TextInputType inputfeildtype,
+    required IconData icontype,
+    bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onToggleVisibility,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: inputfeildtype,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icontype),
+          labelText: label,
+
+          // 👁 Show / Hide icon
+          suffixIcon: isPassword
+              ? IconButton(
+            icon: Icon(
+              obscureText ? Icons.visibility_off : Icons.visibility,
+            ),
+            onPressed: onToggleVisibility,
+          )
+              : null,
+
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.blue),
+          ),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter $label';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
   Future<void> _selectDate(BuildContext context) async {
 
 
@@ -149,7 +219,7 @@ class _MyHomePageState extends State<RegisterPage> {
         length: 3,
         child: Scaffold(
           appBar: AppBar(
-            title: Text('Register to ATEST'),
+            title: Text('Register'),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
@@ -174,9 +244,20 @@ class _MyHomePageState extends State<RegisterPage> {
                       label: 'Full Name', controller: _nameController,inputfeildtype: TextInputType.name,icontype:Icons.person),
                   _buildTextField(label: 'Email', controller: _emailController,inputfeildtype: TextInputType.emailAddress,icontype: Icons.email),
 
-                  _buildTextField(label: 'Password',
+                  /*_buildTextField(label: 'Password',
                       controller: _passwordController,inputfeildtype: TextInputType.visiblePassword,icontype:Icons.password,
-                      obscureText: true),
+                      obscureText: true),*/
+
+
+                  _buildTextFieldWithPassword(label: 'Password',
+                  controller: _passwordController,inputfeildtype: TextInputType.visiblePassword,icontype:Icons.password,isPassword: true,
+                  obscureText: _isPasswordHidden,
+                  onToggleVisibility: () {
+                    setState(() {
+                      _isPasswordHidden = !_isPasswordHidden;
+                    });
+                  },
+                ),
                   _buildTextField(
                       label: 'Mobile Number', controller: _mobileController,inputfeildtype: TextInputType.phone,icontype:Icons.phone),
                  Visibility(visible: true,child:Padding(

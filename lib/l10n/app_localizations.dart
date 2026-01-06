@@ -17,7 +17,34 @@ class AppLocalizations {
   // 🔑 Language map
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
-      'app_name':'SETHU TRUST',
+      'terms_conditions': '''
+Terms & Conditions
+
+Welcome to Anbu Thane Ellam Sethu Trust app. By logging in and using this app, you agree to the following:
+
+Payment Authorization:
+Payments made through this app are voluntary and will be used for social service contributions.
+You authorize the app to process your payment securely using the payment methods provided.
+
+Purpose of Contributions:
+All contributions are utilized for the charitable and social initiatives managed by Anbu Thane Ellam Sethu Trust.
+The Trust ensures transparency and proper use of all collected funds.
+
+User Responsibility:
+Ensure that all payment details provided are accurate.
+The app is not responsible for incorrect payment information or declined transactions.
+
+Consent:
+By using this app, you consent to the Trust processing your payments and acknowledge that contributions are non-refundable unless otherwise specified.
+
+Security & Privacy:
+Your payment information is processed securely and will not be shared with third parties except as required for processing payments.
+
+By logging in, you agree to these Terms & Conditions.
+Thank you for supporting our social initiatives.
+'''
+,
+          'app_name':'SETHU TRUST',
       'brand_name':'Powered by\nWeTech Solutions',
       'title': 'ATEST',
       'search_posts': 'Search posts...',
@@ -55,7 +82,34 @@ class AppLocalizations {
       'minimum_amount': 'Amount should greater then 200',
     },
     'ta': {
-      'app_name':'SETHU TRUST',
+      'terms_conditions': '''
+Terms & Conditions
+
+Welcome to Anbu Thane Ellam Sethu Trust app. By logging in and using this app, you agree to the following:
+
+Payment Authorization:
+Payments made through this app are voluntary and will be used for social service contributions.
+You authorize the app to process your payment securely using the payment methods provided.
+
+Purpose of Contributions:
+All contributions are utilized for the charitable and social initiatives managed by Anbu Thane Ellam Sethu Trust.
+The Trust ensures transparency and proper use of all collected funds.
+
+User Responsibility:
+Ensure that all payment details provided are accurate.
+The app is not responsible for incorrect payment information or declined transactions.
+
+Consent:
+By using this app, you consent to the Trust processing your payments and acknowledge that contributions are non-refundable unless otherwise specified.
+
+Security & Privacy:
+Your payment information is processed securely and will not be shared with third parties except as required for processing payments.
+
+By logging in, you agree to these Terms & Conditions.
+Thank you for supporting our social initiatives.
+'''
+      ,
+      'app_name':'சேது அறக்கட்டளை',
       'brand_name':'Powered by\nWeTech Solutions',
       'title': 'ATEST',
       'search_posts': 'பதிவுகளைத் தேடுங்கள்...',

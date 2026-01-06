@@ -18,6 +18,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../DataFile.dart';
 import '../Login.dart';
+import '../l10n/app_localizations.dart';
 import '../models/comment.dart';
 import '../models/post_data.dart';
 import '../models/sales_data.dart';
@@ -106,8 +107,8 @@ class _LandingPageState extends State<LandingPage>
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text(
-          'ATEST',
+        title: Text(
+          AppLocalizations.of(context).translate('app_name'),
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: Colors.white),
         ),
         centerTitle: false,

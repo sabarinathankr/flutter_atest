@@ -60,24 +60,38 @@ class _RegisterPageState extends State<RegisterPage1> {
   }
 
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        var user = UserForms(
-            FullName: _nameController.text,
-            Email: _emailController.text,
-            Password: _passwordController.text,
-            MobileNumber: _mobileController.text,
-            Gender: _selectedGender.toString(),
-            Profile: base64Image,
-            UsrType: 'User');
-        DbConnections dbConnections =  DbConnections();
-        dbConnections.InsertData(user, context);
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('⚠️ Error: $e')),
-        );
+    String pwd = _passwordController.text.toString().trim();
+    if (!isValidPassword(pwd)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('⚠️ Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.Invalid password ')),
+      );
+    } else {
+      if (_formKey.currentState!.validate()) {
+        try {
+          var user = UserForms(
+              FullName: _nameController.text,
+              Email: _emailController.text,
+              Password: _passwordController.text,
+              MobileNumber: _mobileController.text,
+              Gender: _selectedGender.toString(),
+              Profile: base64Image,
+              UsrType: 'User');
+          DbConnections dbConnections = DbConnections();
+          dbConnections.InsertData(user, context);
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('⚠️ Error: $e')),
+          );
+        }
       }
     }
+  }
+  bool isValidPassword(String password) {
+    final passwordRegex = RegExp(
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$'
+    );
+
+    return passwordRegex.hasMatch(password);
   }
 
   Widget _buildTextField({
@@ -127,7 +141,7 @@ class _RegisterPageState extends State<RegisterPage1> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Register to ATEST'),
+          title: Text('Register'),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -189,10 +203,11 @@ class _RegisterPageState extends State<RegisterPage1> {
                       ),
                       value: _selectedGender,
                       items: ['Male', 'Female', 'Other']
-                          .map((gender) => DropdownMenuItem(
-                                value: gender,
-                                child: Text(gender),
-                              ))
+                          .map((gender) =>
+                          DropdownMenuItem(
+                            value: gender,
+                            child: Text(gender),
+                          ))
                           .toList(),
                       onChanged: (value) {
                         setState(() {
@@ -211,7 +226,7 @@ class _RegisterPageState extends State<RegisterPage1> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.lightBlue,
                       padding:
-                          EdgeInsets.symmetric(vertical: 16, horizontal: 100),
+                      EdgeInsets.symmetric(vertical: 16, horizontal: 100),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

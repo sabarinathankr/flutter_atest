@@ -7,6 +7,7 @@ import 'package:ate/utils/shared_preference.dart';
 import 'package:flutter/material.dart';
 
 import 'DataFile.dart';
+import 'l10n/app_localizations.dart';
 import 'main.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 class LoginPage extends StatefulWidget {
@@ -32,6 +33,9 @@ class _LoginPageState extends State<LoginPage> {
 
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
+      if(_passwordController.text.toString().length<=5){
+        return;
+      }
 
       setState(() => _isLoading = true);
 
@@ -92,105 +96,6 @@ class _LoginPageState extends State<LoginPage> {
 
 
 
-  /* void _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // Simulate login process
-      // await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-      });
-      DbConnections dbConnections =  DbConnections();
-     *//* dbConnections.loginData(
-          _emailController.text, _passwordController.text, context);*//*
-      String? result = await dbConnections.loginData(_emailController.text, _passwordController.text, context);
-
-     *//* if (result != null) {
-        // SUCCESS CALLBACK
-        print("Login success, userType = $result");
-      } else {
-        // FAILURE CALLBACK
-        print("Login failed");
-      }*//*
-
-      if (result== null || result.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid credentials'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return null;
-      }
-
-      // Save user locally
-      var userDoc = result.first;
-      print("SharedPreferences_userDoc: $userDoc");
-      try {
-        await SharedPreferenceHelper.setString(AppConstants.userData, jsonEncode(userDoc));
-
-
-      } catch (spError) {
-        print("SharedPreferences error: $spError");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Local storage error'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return null;
-      }
-
-      String userType = userDoc['UsrType'] ?? "";
-
-      if (userType.isNotEmpty) {
-        final dialog = AwesomeDialog(
-          context: context,
-          animType: AnimType.leftSlide,
-          dialogType: DialogType.noHeader,
-          showCloseIcon: false,
-          dismissOnTouchOutside: false,
-          customHeader: Icon(
-            Icons.check_circle,
-            color: Colors.green,
-            size: 80,
-          ),
-          title: 'Success',
-          desc: 'User login successful!',
-        );
-
-        dialog.show();
-
-        Future.delayed(Duration(seconds: 2), () {
-          dialog.dismiss();
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => MyApp()), (Route<dynamic> route) => false,
-          );
-        });
-
-        // return userType;
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User type not defined.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return null;
-      }
-      print('Email: ${_emailController.text}');
-      print('Password: ${_passwordController.text}');
-
-      // Show success message
-
-    }
-  }*/
-
   void _openTermsAndConditions() {
     // Handle terms and conditions link
     showDialog(
@@ -198,10 +103,7 @@ class _LoginPageState extends State<LoginPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Terms and Conditions'),
-          content: const Text(
-            'This is where your terms and conditions would be displayed. '
-                'You can replace this with your actual terms content or '
-                'navigate to a web page.',
+          content: Text(AppLocalizations.of(context).translate('terms_conditions'),
           ),
           actions: [
             TextButton(

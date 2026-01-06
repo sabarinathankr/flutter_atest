@@ -14,18 +14,6 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
 
-  @override
-  void initState() {
-    super.initState();
-
-    // ⏳ Navigate after 3 seconds
-    /*Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LandingPage()),
-      );
-    });*/
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,29 +53,6 @@ class _SplashScreenState extends State<SplashScreen> {
                 },
               ),
 
-
-             /* AnimatedTextKit(
-                animatedTexts: [
-                  TypewriterAnimatedText(
-                    AppLocalizations.of(context).translate('app_name'),
-                    textStyle: const TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.5,
-                    ),
-                    speed: const Duration(milliseconds: 200), // typing speed
-                  ),
-                ],
-                totalRepeatCount: 1, // play only once
-                isRepeatingAnimation: false,
-                onFinished: () {
-                  // ✅ CALLBACK when animation finishes
-                  print("Typing animation completed");
-
-                  // navigate / trigger next action
-                },
-              ),*/
 
               const Spacer(),
 
