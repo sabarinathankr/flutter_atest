@@ -49,9 +49,9 @@ class MongoService {
   }
 
   Future<void> close() async {
-    if (_db != null && _db!.isConnected) {
+   /* if (_db != null && _db!.isConnected) {
       await _db!.close();
       _db = null;
-    }
+    }*/
   }
 }

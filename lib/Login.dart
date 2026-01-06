@@ -103,7 +103,15 @@ class _LoginPageState extends State<LoginPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Terms and Conditions'),
-          content: Text(AppLocalizations.of(context).translate('terms_conditions'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: MediaQuery.of(context).size.height * 0.6, // 👈 limit height
+            child: SingleChildScrollView(
+              child: Text(
+                AppLocalizations.of(context).translate('terms_conditions'),
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
           ),
           actions: [
             TextButton(
