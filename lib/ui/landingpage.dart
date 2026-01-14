@@ -88,59 +88,15 @@ class _LandingPageState extends State<LandingPage>
     ];
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      /*appBar: AppBar(
-        automaticallyImplyLeading: false, // 👈 removes back arrow
-        title: Text(
-          AppLocalizations.of(context).translate('app_name'),
-          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: Colors.white),
-        ),
-        centerTitle: false,
-        elevation: 3,
-        backgroundColor: Colors.blue.shade700,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(18)),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.15),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: IgnorePointer(
-              ignoring: false, // ✅ allow taps!
-              child: TabBar(
-                controller: _tabController,
-                indicatorColor: Colors.transparent,
-                overlayColor:
-                WidgetStateProperty.all(Colors.transparent), // no ripple
-                dividerColor: Colors.transparent,
-                labelColor: Colors.blue.shade700,
-                unselectedLabelColor: Colors.grey.shade500,
-                tabs: tabs,
-              ),
-            ),
-          ),
-        ),
-      ),*/
       appBar: CustomAppBar(
         tabController: _tabController,
         tabs: tabs,
       ),
       body: TabBarView(
         controller: _tabController,
-        physics: const BouncingScrollPhysics(),
-        children: views,
+        children:views,
       ),
     );
+
   }
 }

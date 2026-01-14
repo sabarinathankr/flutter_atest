@@ -59,5 +59,18 @@ class SharedPreferenceHelper{
     }
     return name;
   }
+  static Future<String> getLanguage() async{
+    String language="";
+    final prefs = await SharedPreferences.getInstance();
+    final dataString = prefs.getString("language");
 
+    if (dataString != null) {
+      return dataString;
+    }
+    return language;
+  }
+  static Future<void> setLanguage(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("language", value);
+  }
 }

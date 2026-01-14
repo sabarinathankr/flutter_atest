@@ -1,8 +1,11 @@
 import 'dart:async';
+
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../main.dart';
+import '../utils/shared_preference.dart';
 import 'landingpage.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -14,20 +17,23 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
 
-
+  @override
+  void initState() {
+    super.initState();
+    getLanguage();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blue.shade700, // 🌤 Sky Blue
       body: SafeArea(
-
         child: SizedBox(
-          width: double.infinity, // ✅ full width
+          width: double.infinity,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // 👈 FIX
             children: [
-              const Spacer(),
+              const SizedBox(), // top spacer
 
-              // 🌟 App Name (Center)
               AnimatedTextKit(
                 isRepeatingAnimation: false,
                 animatedTexts: [
@@ -39,13 +45,11 @@ class _SplashScreenState extends State<SplashScreen> {
                       color: Colors.white,
                       letterSpacing: 1.5,
                     ),
-                    speed: const Duration(milliseconds: 80), // smooth
-                    cursor: '', // ✅ THIS REMOVES THE UNDERSCORE
+                    speed: const Duration(milliseconds: 80),
+                    cursor: '',
                   ),
                 ],
                 onFinished: () {
-                  // ✅ callback after animation completes
-                  print("Animation completed");
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (_) => const LandingPage()),
@@ -53,27 +57,31 @@ class _SplashScreenState extends State<SplashScreen> {
                 },
               ),
 
-
-              const Spacer(),
-
-              // ⚡ Powered By (Bottom)
               Padding(
                 padding: const EdgeInsets.only(bottom: 24),
                 child: Text(
                   AppLocalizations.of(context).translate('brand_name'),
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Colors.white70,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
             ],
           ),
-        )
-
+        ),
       ),
+
     );
+  }
+
+  Future<void> getLanguage() async {
+    var language = await SharedPreferenceHelper.getLanguage();
+    if (language.isEmpty) {
+      language = 'en';
+    }
+    MyApp.setLocale(context, Locale(language));
   }
 }
