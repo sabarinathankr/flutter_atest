@@ -44,7 +44,8 @@ By logging in, you agree to these Terms & Conditions.
 Thank you for supporting our social initiatives.
 '''
 ,
-          'app_name':'SETHU TRUST',
+      'app_name':'Anbu Thane Ellam Sethu Trust',
+      'location':'Thanjavur',
       'brand_name':'Powered by\nWeTech Solutions',
       'title': 'ATEST',
       'search_posts': 'Search posts...',
@@ -109,7 +110,8 @@ By logging in, you agree to these Terms & Conditions.
 Thank you for supporting our social initiatives.
 '''
       ,
-      'app_name':'சேது அறக்கட்டளை',
+      'app_name':'அன்பு தானே எல்லாம் சேது அறக்கட்டளை',
+      'location':'தஞ்சாவூர்',
       'brand_name':'Powered by\nWeTech Solutions',
       'title': 'ATEST',
       'search_posts': 'பதிவுகளைத் தேடுங்கள்...',

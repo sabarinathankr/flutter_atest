@@ -1,29 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:alphabet_navigation/alphabet_navigation.dart';
-import 'package:ate/Register.dart';
 import 'package:ate/ui/adminpage.dart';
 import 'package:ate/ui/payment_page.dart';
 import 'package:ate/ui/postpage.dart';
 import 'package:ate/ui/setting_page.dart';
-import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-import '../DataFile.dart';
-import '../Login.dart';
-import '../l10n/app_localizations.dart';
-import '../models/comment.dart';
-import '../models/post_data.dart';
-import '../models/sales_data.dart';
 import '../utils/app_constants.dart';
 import '../utils/shared_preference.dart';
+import 'CustomAppBar.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -37,7 +22,6 @@ class _LandingPageState extends State<LandingPage>
   bool _hideadmin = true;
   TabController? _tabController;
 
-
   @override
   void initState() {
     super.initState();
@@ -47,15 +31,14 @@ class _LandingPageState extends State<LandingPage>
 
   Future<void> _initView() async {
     final dataString =
-    await SharedPreferenceHelper.getString(AppConstants.userData);
+        await SharedPreferenceHelper.getString(AppConstants.userData);
 
     final newHideAdmin = !(dataString != null &&
         jsonDecode(dataString)['UsrType'].toString() == "Admin");
 
     if (newHideAdmin != _hideadmin) {
       _tabController?.dispose();
-      _tabController =
-          TabController(length: newHideAdmin ? 3 : 4, vsync: this);
+      _tabController = TabController(length: newHideAdmin ? 3 : 4, vsync: this);
     }
 
     setState(() {
@@ -106,7 +89,8 @@ class _LandingPageState extends State<LandingPage>
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
+      /*appBar: AppBar(
+        automaticallyImplyLeading: false, // 👈 removes back arrow
         title: Text(
           AppLocalizations.of(context).translate('app_name'),
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: Colors.white),
@@ -147,6 +131,10 @@ class _LandingPageState extends State<LandingPage>
             ),
           ),
         ),
+      ),*/
+      appBar: CustomAppBar(
+        tabController: _tabController,
+        tabs: tabs,
       ),
       body: TabBarView(
         controller: _tabController,
@@ -156,8 +144,3 @@ class _LandingPageState extends State<LandingPage>
     );
   }
 }
-
-
-
-
-

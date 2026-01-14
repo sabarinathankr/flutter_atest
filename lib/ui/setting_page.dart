@@ -389,7 +389,7 @@ class _UserDashboardTabState extends State<UserDashboardTab>
       ),
     );
   }
-  Widget _buildLanguage(
+ /* Widget _buildLanguage(
        Color color, bool isTablet) {
     return Card(
       elevation: 4,
@@ -424,7 +424,99 @@ class _UserDashboardTabState extends State<UserDashboardTab>
         ),
       ),
     );
+  }*/
+
+  Widget _buildLanguage(Color color, bool isTablet) {
+    String selectedLang = Localizations.localeOf(context).languageCode;
+    bool isEnglish = selectedLang == 'en';
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 24.0 : 16.0,
+          vertical: isTablet ? 20.0 : 12.0
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: color.withOpacity(0.08),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+
+          // Custom Animated Toggle
+          GestureDetector(
+            onTap: () {
+              String newLang = isEnglish ? 'ta' : 'en';
+              MyApp.setLocale(context, Locale(newLang));
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: 40,
+              width: 120,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(25),
+                color: color.withOpacity(0.1),
+              ),
+              child: Stack(
+                children: [
+                  // Sliding Background Indicator
+                  AnimatedAlign(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    alignment: isEnglish ? Alignment.centerLeft : Alignment.centerRight,
+                    child: Container(
+                      width: 60,
+                      height: 34,
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: color.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Text Labels
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'EN',
+                            style: TextStyle(
+                              color: isEnglish ? Colors.white : color,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'தமிழ்',
+                            style: TextStyle(
+                              color: !isEnglish ? Colors.white : color,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
+
   void _pickImage() {
     // Implement your image picker
   }
